@@ -15,6 +15,11 @@ const knownMessages: Record<string, string> = {
   lesson_create_failed: "Não foi possível agendar a aula.",
   lesson_update_failed: "Não foi possível remarcar a aula.",
   lesson_not_scheduled: "Essa ação só está disponível para aulas agendadas.",
+  recurrence_invalid: "Revise os dados do horário fixo.",
+  recurrence_student_invalid: "Somente alunos ativos da sua conta podem receber um horário fixo.",
+  recurrence_conflict: "Existem aulas conflitantes com esse horário nas próximas 8 semanas.",
+  recurrence_not_found: "O horário fixo não existe ou já está inativo.",
+  recurrence_save_failed: "Não foi possível salvar o horário fixo.",
 };
 
 export function authErrorMessage(code: string) {

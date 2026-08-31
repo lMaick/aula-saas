@@ -29,6 +29,7 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-semibold tracking-tight">Aula com {student.name}</h1>
             <Badge variant={lesson.status === "scheduled" ? "default" : lesson.status === "completed" ? "secondary" : "outline"}>{lessonStatusLabels[lesson.status]}</Badge>
+            {lesson.recurrence_id ? <Badge variant="outline">Aula recorrente</Badge> : null}
           </div>
         </div>
         {scheduled ? <Link className={cn(buttonVariants({ variant: "outline" }), "w-full sm:w-auto")} href={`/agenda/${lesson.id}/editar`}>Remarcar</Link> : null}

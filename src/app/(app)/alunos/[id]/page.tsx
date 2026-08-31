@@ -8,8 +8,10 @@ import { toggleStudentStatus } from "@/features/students/actions";
 import { billingModelLabels } from "@/features/students/constants";
 import { getStudentById } from "@/features/students/queries";
 import { lessonStatusLabels } from "@/features/lessons/constants";
-import { getLessonsForStudent } from "@/features/lessons/queries";
-import { formatLessonDate, formatLessonTime } from "@/lib/dates/timezone";
+import { weekdayLabels } from "@/features/lessons/constants";
+import { deactivateRecurrence } from "@/features/lessons/actions";
+import { getLessonsForStudent, getRecurrencesForStudent } from "@/features/lessons/queries";
+import { formatDateKey, formatLessonDate, formatLessonTime, formatLocalTimeRange } from "@/lib/dates/timezone";
 import { formatBrlFromCents } from "@/lib/money/brl";
 import { cn } from "@/lib/utils";
 
@@ -27,9 +29,10 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 
 export default async function StudentPage({ params, searchParams }: StudentPageProps) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const [student, lessonHistory] = await Promise.all([
+  const [student, lessonHistory, recurrenceHistory] = await Promise.all([
     getStudentById(id),
     getLessonsForStudent(id),
+    getRecurrencesForStudent(id),
   ]);
 
   return (
@@ -61,6 +64,13 @@ export default async function StudentPage({ params, searchParams }: StudentPageP
             <p className="text-xs text-muted-foreground">Observações</p>
             <p className="mt-1 whitespace-pre-wrap">{student.notes || "Nenhuma observação."}</p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-3"><CardTitle>Horários fixos</CardTitle>{student.status === "active" ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={`/alunos/${student.id}/horarios/novo`}>Adicionar</Link> : null}</CardHeader>
+        <CardContent>
+          {recurrenceHistory.recurrences.length === 0 ? <p className="py-4 text-center text-sm text-muted-foreground">Nenhum horário fixo configurado.</p> : <div className="space-y-3">{recurrenceHistory.recurrences.map((recurrence) => <div key={recurrence.id} className={cn("rounded-lg border p-4", !recurrence.active && "opacity-60")}><div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-medium">{weekdayLabels[recurrence.weekday]} • {formatLocalTimeRange(recurrence.local_start_time, recurrence.duration_minutes)}</p><p className="text-sm text-muted-foreground">{recurrence.ends_on ? `Até ${formatDateKey(recurrence.ends_on)}` : "Sem data final"} • {recurrence.active ? "Ativo" : "Inativo"}</p></div>{recurrence.active ? <div className="flex gap-2"><Link className={buttonVariants({ variant: "outline", size: "sm" })} href={`/alunos/${student.id}/horarios/${recurrence.id}/editar`}>Editar</Link><form action={deactivateRecurrence}><input type="hidden" name="recurrence_id" value={recurrence.id} /><Button type="submit" size="sm" variant="outline">Desativar</Button></form></div> : null}</div></div>)}</div>}
         </CardContent>
       </Card>
 

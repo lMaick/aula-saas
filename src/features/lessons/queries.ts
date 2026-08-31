@@ -12,7 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 const lessonColumns =
-  "id, owner_id, student_id, starts_at, ends_at, status, notes, created_at, updated_at";
+  "id, owner_id, student_id, starts_at, ends_at, status, notes, created_at, updated_at, recurrence_id, recurrence_date, recurrence_managed";
 
 async function lessonContext() {
   const supabase = await createClient();
@@ -24,6 +24,10 @@ async function lessonContext() {
     .eq("id", user.id)
     .single();
   return { supabase, user, timeZone: profile?.timezone || "America/Bahia" };
+}
+
+export async function getCurrentTimeZone() {
+  return (await lessonContext()).timeZone;
 }
 
 async function attachStudentNames(
@@ -44,6 +48,8 @@ async function attachStudentNames(
 
 export async function getAgenda(view: "today" | "week", requestedWeek?: string) {
   const { supabase, user, timeZone } = await lessonContext();
+  const { error: maintenanceError } = await supabase.rpc("maintain_weekly_recurrences", {});
+  if (maintenanceError) throw new Error("Não foi possível atualizar as aulas recorrentes.");
   const today = localDateKey(new Date(), timeZone);
   const weekStart = /^\d{4}-\d{2}-\d{2}$/.test(requestedWeek || "")
     ? startOfWeekDateKey(requestedWeek as string)
@@ -119,4 +125,35 @@ export async function getLessonsForStudent(studentId: string) {
     .order("starts_at", { ascending: false });
   if (error) throw new Error("Não foi possível carregar as aulas do aluno.");
   return { lessons: data, timeZone };
+}
+
+export async function getRecurrencesForStudent(studentId: string) {
+  const { supabase, user, timeZone } = await lessonContext();
+  const { data, error } = await supabase
+    .from("lesson_recurrences")
+    .select("id, owner_id, student_id, weekday, local_start_time, duration_minutes, starts_on, ends_on, active, created_at, updated_at")
+    .eq("owner_id", user.id)
+    .eq("student_id", studentId)
+    .order("active", { ascending: false })
+    .order("weekday")
+    .order("local_start_time");
+  if (error) throw new Error("Não foi possível carregar os horários fixos.");
+  return { recurrences: data, timeZone };
+}
+
+export async function getRecurrenceById(studentId: string, recurrenceId: string) {
+  const student = lessonIdSchema.safeParse(studentId);
+  const recurrence = lessonIdSchema.safeParse(recurrenceId);
+  if (!student.success || !recurrence.success) notFound();
+  const { supabase, user, timeZone } = await lessonContext();
+  const { data, error } = await supabase
+    .from("lesson_recurrences")
+    .select("id, owner_id, student_id, weekday, local_start_time, duration_minutes, starts_on, ends_on, active, created_at, updated_at")
+    .eq("id", recurrence.data)
+    .eq("student_id", student.data)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (error) throw new Error("Não foi possível carregar o horário fixo.");
+  if (!data) notFound();
+  return { recurrence: data, timeZone };
 }

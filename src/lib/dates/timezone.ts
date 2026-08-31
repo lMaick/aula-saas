@@ -117,3 +117,18 @@ export function intervalsOverlap(
 ) {
   return firstStart < secondEnd && firstEnd > secondStart;
 }
+
+export function formatLocalTimeRange(localStartTime: string, durationMinutes: number) {
+  const [hour, minute] = localStartTime.slice(0, 5).split(":").map(Number);
+  const startMinutes = hour * 60 + minute;
+  const endMinutes = startMinutes + durationMinutes;
+  const format = (total: number) =>
+    `${String(Math.floor((total % 1440) / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+  return `${format(startMinutes)}–${format(endMinutes)}`;
+}
+
+export function formatDateKey(dateKey: string) {
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(
+    new Date(`${dateKey}T00:00:00Z`),
+  );
+}

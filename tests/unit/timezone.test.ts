@@ -4,6 +4,7 @@ import test from "node:test"
 import {
   durationInMinutes,
   intervalsOverlap,
+  formatLocalTimeRange,
   localDateTimeToUtc,
   startOfWeekDateKey,
   utcToLocalInput,
@@ -13,6 +14,11 @@ test("converte o horário de America/Bahia para UTC e de volta", () => {
   const utc = localDateTimeToUtc("2026-09-01T14:00", "America/Bahia")
   assert.equal(utc?.toISOString(), "2026-09-01T17:00:00.000Z")
   assert.equal(utcToLocalInput("2026-09-01T17:00:00.000Z", "America/Bahia"), "2026-09-01T14:00")
+})
+
+test("formata intervalo local de uma recorrência sem depender do servidor", () => {
+  assert.equal(formatLocalTimeRange("14:00:00", 60), "14:00–15:00")
+  assert.equal(formatLocalTimeRange("23:30:00", 60), "23:30–00:30")
 })
 
 test("calcula o início da semana na segunda-feira", () => {

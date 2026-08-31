@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { lessonFormSchema, lessonIdSchema } from "@/features/lessons/schemas";
+import {
+  lessonFormSchema,
+  lessonIdSchema,
+  recurrenceFormSchema,
+  recurrenceIdSchema,
+} from "@/features/lessons/schemas";
 import { localDateTimeToUtc } from "@/lib/dates/timezone";
 import { createClient } from "@/lib/supabase/server";
 
@@ -123,6 +128,7 @@ export async function rescheduleLesson(formData: FormData) {
       starts_at: startsAt.toISOString(),
       ends_at: endsAt.toISOString(),
       notes: parsed.notes || null,
+      recurrence_managed: false,
     })
     .eq("id", id.data)
     .eq("owner_id", user.id)
@@ -162,4 +168,98 @@ export async function completeLesson(formData: FormData) {
 
 export async function cancelLesson(formData: FormData) {
   return changeLessonStatus(formData, "cancelled");
+}
+
+function recurrenceValues(formData: FormData) {
+  return recurrenceFormSchema.safeParse({
+    studentId: formData.get("student_id"),
+    weekday: formData.get("weekday"),
+    localStartTime: formData.get("local_start_time"),
+    durationMinutes: formData.get("duration_minutes"),
+    startsOn: formData.get("starts_on"),
+    endsOn: formData.get("ends_on") || "",
+  });
+}
+
+function recurrenceErrorCode(message?: string) {
+  if (message?.includes("recurrence_conflict")) return "recurrence_conflict";
+  if (message?.includes("recurrence_student_invalid")) return "recurrence_student_invalid";
+  if (message?.includes("recurrence_not_found")) return "recurrence_not_found";
+  return "recurrence_save_failed";
+}
+
+export async function createRecurrence(formData: FormData) {
+  const parsed = recurrenceValues(formData);
+  if (!parsed.success) redirect("/alunos?erro=recurrence_invalid");
+  const { supabase, user } = await actionContext();
+  const { data: student } = await supabase
+    .from("students")
+    .select("id")
+    .eq("id", parsed.data.studentId)
+    .eq("owner_id", user.id)
+    .eq("status", "active")
+    .maybeSingle();
+  if (!student) redirect("/alunos?erro=recurrence_student_invalid");
+
+  const { error } = await supabase.rpc("create_weekly_recurrence", {
+    p_student_id: student.id,
+    p_weekday: parsed.data.weekday,
+    p_local_start_time: parsed.data.localStartTime,
+    p_duration_minutes: parsed.data.durationMinutes,
+    p_starts_on: parsed.data.startsOn,
+    p_ends_on: parsed.data.endsOn || null,
+  });
+  if (error) redirect(`/alunos/${student.id}/horarios/novo?erro=${recurrenceErrorCode(error.message)}`);
+  revalidatePath("/agenda");
+  revalidatePath(`/alunos/${student.id}`);
+  redirect(`/alunos/${student.id}?mensagem=Horário fixo criado.`);
+}
+
+export async function updateRecurrence(formData: FormData) {
+  const recurrenceId = recurrenceIdSchema.safeParse(formData.get("recurrence_id"));
+  const parsed = recurrenceValues(formData);
+  if (!recurrenceId.success || !parsed.success) redirect("/alunos?erro=recurrence_invalid");
+  const { supabase, user } = await actionContext();
+  const { data: recurrence } = await supabase
+    .from("lesson_recurrences")
+    .select("id, student_id")
+    .eq("id", recurrenceId.data)
+    .eq("owner_id", user.id)
+    .eq("student_id", parsed.data.studentId)
+    .eq("active", true)
+    .maybeSingle();
+  if (!recurrence) redirect(`/alunos/${parsed.data.studentId}?erro=recurrence_not_found`);
+
+  const { error } = await supabase.rpc("update_weekly_recurrence", {
+    p_recurrence_id: recurrence.id,
+    p_weekday: parsed.data.weekday,
+    p_local_start_time: parsed.data.localStartTime,
+    p_duration_minutes: parsed.data.durationMinutes,
+    p_starts_on: parsed.data.startsOn,
+    p_ends_on: parsed.data.endsOn || null,
+  });
+  if (error) redirect(`/alunos/${recurrence.student_id}/horarios/${recurrence.id}/editar?erro=${recurrenceErrorCode(error.message)}`);
+  revalidatePath("/agenda");
+  revalidatePath(`/alunos/${recurrence.student_id}`);
+  redirect(`/alunos/${recurrence.student_id}?mensagem=Horário fixo atualizado.`);
+}
+
+export async function deactivateRecurrence(formData: FormData) {
+  const recurrenceId = recurrenceIdSchema.safeParse(formData.get("recurrence_id"));
+  if (!recurrenceId.success) redirect("/alunos");
+  const { supabase, user } = await actionContext();
+  const { data: recurrence } = await supabase
+    .from("lesson_recurrences")
+    .select("id, student_id")
+    .eq("id", recurrenceId.data)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (!recurrence) redirect("/alunos");
+  const { error } = await supabase.rpc("deactivate_weekly_recurrence", {
+    p_recurrence_id: recurrence.id,
+  });
+  if (error) redirect(`/alunos/${recurrence.student_id}?erro=${recurrenceErrorCode(error.message)}`);
+  revalidatePath("/agenda");
+  revalidatePath(`/alunos/${recurrence.student_id}`);
+  redirect(`/alunos/${recurrence.student_id}?mensagem=Horário fixo desativado.`);
 }
