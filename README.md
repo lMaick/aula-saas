@@ -25,4 +25,6 @@ npm run typecheck
 npm run build
 ```
 
-O arquivo `.env.example` reserva apenas os nomes das variáveis previstas para uma integração futura. O Supabase ainda não está implementado.
+Preencha `.env.local` com a URL, a chave pública do Supabase e a URL local do site. Nunca use uma chave `service_role` em variáveis `NEXT_PUBLIC_*`.
+
+As migrations ficam em `supabase/migrations` e devem ser aplicadas ao projeto Supabase antes de testar autenticação e perfil.
