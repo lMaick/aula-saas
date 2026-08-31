@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test:unit": "node --no-warnings --experimental-strip-types --test tests/unit/*.test.ts",
     "test:security": "node --test tests/security/*.test.mjs"
   },
   "dependencies": {

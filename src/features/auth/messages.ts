@@ -6,6 +6,9 @@ const knownMessages: Record<string, string> = {
   reset_failed: "Não foi possível redefinir a senha.",
   profile_failed: "Não foi possível salvar o perfil.",
   expired_link: "O link é inválido ou expirou. Solicite um novo.",
+  student_invalid: "Revise os dados do aluno e tente novamente.",
+  student_create_failed: "Não foi possível cadastrar o aluno.",
+  student_update_failed: "Não foi possível atualizar o aluno.",
 };
 
 export function authErrorMessage(code: string) {

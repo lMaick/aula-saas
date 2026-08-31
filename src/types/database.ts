@@ -1,4 +1,6 @@
 export type AccountStatus = "trial" | "active" | "expired";
+export type StudentStatus = "active" | "inactive";
+export type BillingModel = "per_lesson" | "monthly" | "package";
 
 export type Database = {
   public: {
@@ -39,6 +41,42 @@ export type Database = {
           pix_key?: string | null;
           timezone?: string;
           onboarding_completed_at?: string | null;
+        };
+        Relationships: [];
+      };
+      students: {
+        Row: {
+          id: string;
+          owner_id: string;
+          name: string;
+          whatsapp: string;
+          notes: string | null;
+          status: StudentStatus;
+          billing_model: BillingModel;
+          billing_amount_cents: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id?: string;
+          name: string;
+          whatsapp: string;
+          notes?: string | null;
+          status?: StudentStatus;
+          billing_model: BillingModel;
+          billing_amount_cents: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          whatsapp?: string;
+          notes?: string | null;
+          status?: StudentStatus;
+          billing_model?: BillingModel;
+          billing_amount_cents?: number;
+          updated_at?: string;
         };
         Relationships: [];
       };
