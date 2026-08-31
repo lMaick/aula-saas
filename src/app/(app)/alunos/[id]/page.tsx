@@ -7,6 +7,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toggleStudentStatus } from "@/features/students/actions";
 import { billingModelLabels } from "@/features/students/constants";
 import { getStudentById } from "@/features/students/queries";
+import { lessonStatusLabels } from "@/features/lessons/constants";
+import { getLessonsForStudent } from "@/features/lessons/queries";
+import { formatLessonDate, formatLessonTime } from "@/lib/dates/timezone";
 import { formatBrlFromCents } from "@/lib/money/brl";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +27,10 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 
 export default async function StudentPage({ params, searchParams }: StudentPageProps) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const student = await getStudentById(id);
+  const [student, lessonHistory] = await Promise.all([
+    getStudentById(id),
+    getLessonsForStudent(id),
+  ]);
 
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-4 py-8">
@@ -55,6 +61,27 @@ export default async function StudentPage({ params, searchParams }: StudentPageP
             <p className="text-xs text-muted-foreground">Observações</p>
             <p className="mt-1 whitespace-pre-wrap">{student.notes || "Nenhuma observação."}</p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Aulas</CardTitle></CardHeader>
+        <CardContent>
+          {lessonHistory.lessons.length === 0 ? (
+            <div className="space-y-3 py-4 text-center">
+              <p className="text-sm text-muted-foreground">Nenhuma aula registrada para este aluno.</p>
+              {student.status === "active" ? <Link className={buttonVariants({ variant: "outline" })} href="/agenda/nova">Agendar aula</Link> : null}
+            </div>
+          ) : (
+            <div className="divide-y">
+              {lessonHistory.lessons.map((lesson) => (
+                <Link key={lesson.id} href={`/agenda/${lesson.id}`} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
+                  <div><p className="text-sm font-medium capitalize">{formatLessonDate(lesson.starts_at, lessonHistory.timeZone)}</p><p className="text-sm text-muted-foreground">{formatLessonTime(lesson.starts_at, lessonHistory.timeZone)}</p></div>
+                  <Badge variant={lesson.status === "scheduled" ? "default" : lesson.status === "completed" ? "secondary" : "outline"}>{lessonStatusLabels[lesson.status]}</Badge>
+                </Link>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 

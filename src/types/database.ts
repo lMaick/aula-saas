@@ -1,6 +1,7 @@
 export type AccountStatus = "trial" | "active" | "expired";
 export type StudentStatus = "active" | "inactive";
 export type BillingModel = "per_lesson" | "monthly" | "package";
+export type LessonStatus = "scheduled" | "completed" | "cancelled";
 
 export type Database = {
   public: {
@@ -76,6 +77,38 @@ export type Database = {
           status?: StudentStatus;
           billing_model?: BillingModel;
           billing_amount_cents?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      lessons: {
+        Row: {
+          id: string;
+          owner_id: string;
+          student_id: string;
+          starts_at: string;
+          ends_at: string;
+          status: LessonStatus;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id?: string;
+          student_id: string;
+          starts_at: string;
+          ends_at: string;
+          status?: LessonStatus;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          starts_at?: string;
+          ends_at?: string;
+          status?: LessonStatus;
+          notes?: string | null;
           updated_at?: string;
         };
         Relationships: [];

@@ -9,6 +9,12 @@ const knownMessages: Record<string, string> = {
   student_invalid: "Revise os dados do aluno e tente novamente.",
   student_create_failed: "Não foi possível cadastrar o aluno.",
   student_update_failed: "Não foi possível atualizar o aluno.",
+  lesson_invalid: "Revise os dados da aula e tente novamente.",
+  lesson_student_invalid: "Selecione um aluno ativo da sua conta.",
+  lesson_conflict: "Já existe uma aula agendada nesse horário.",
+  lesson_create_failed: "Não foi possível agendar a aula.",
+  lesson_update_failed: "Não foi possível remarcar a aula.",
+  lesson_not_scheduled: "Essa ação só está disponível para aulas agendadas.",
 };
 
 export function authErrorMessage(code: string) {

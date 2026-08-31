@@ -13,6 +13,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3">
           <Link href="/area" className="font-semibold">Aula SaaS</Link>
           <div className="flex items-center gap-2">
+            <Link className="text-sm text-muted-foreground hover:text-foreground" href="/agenda">
+              Agenda
+            </Link>
             <Link className="text-sm text-muted-foreground hover:text-foreground" href="/alunos">
               Alunos
             </Link>
