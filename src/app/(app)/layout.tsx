@@ -19,6 +19,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <Link className="text-sm text-muted-foreground hover:text-foreground" href="/alunos">
               Alunos
             </Link>
+            <Link className="text-sm text-muted-foreground hover:text-foreground" href="/financeiro">
+              Financeiro
+            </Link>
             <Link className="hidden text-sm text-muted-foreground sm:block" href="/configuracoes">
               {profile.name || "Meu perfil"}
             </Link>

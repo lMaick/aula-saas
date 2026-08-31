@@ -20,6 +20,14 @@ const knownMessages: Record<string, string> = {
   recurrence_conflict: "Existem aulas conflitantes com esse horário nas próximas 8 semanas.",
   recurrence_not_found: "O horário fixo não existe ou já está inativo.",
   recurrence_save_failed: "Não foi possível salvar o horário fixo.",
+  monthly_charge_invalid: "Revise a competência e o vencimento.",
+  monthly_student_invalid: "Selecione um aluno mensalista ativo da sua conta.",
+  monthly_charge_duplicate: "Essa mensalidade já existe.",
+  monthly_charge_failed: "Não foi possível criar a mensalidade.",
+  charge_invalid: "Cobrança inválida.",
+  charge_not_pending: "Essa cobrança não está pendente.",
+  charge_payment_failed: "Não foi possível registrar o pagamento.",
+  lesson_complete_failed: "Não foi possível concluir a aula.",
 };
 
 export function authErrorMessage(code: string) {

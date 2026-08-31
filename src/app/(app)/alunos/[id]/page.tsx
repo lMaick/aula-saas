@@ -14,6 +14,8 @@ import { getLessonsForStudent, getRecurrencesForStudent } from "@/features/lesso
 import { formatDateKey, formatLessonDate, formatLessonTime, formatLocalTimeRange } from "@/lib/dates/timezone";
 import { formatBrlFromCents } from "@/lib/money/brl";
 import { cn } from "@/lib/utils";
+import { getChargesForStudent } from "@/features/finance/queries";
+import { chargeStatusLabels } from "@/features/finance/constants";
 
 type StudentPageProps = {
   params: Promise<{ id: string }>;
@@ -29,10 +31,11 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 
 export default async function StudentPage({ params, searchParams }: StudentPageProps) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const [student, lessonHistory, recurrenceHistory] = await Promise.all([
+  const [student, lessonHistory, recurrenceHistory, charges] = await Promise.all([
     getStudentById(id),
     getLessonsForStudent(id),
     getRecurrencesForStudent(id),
+    getChargesForStudent(id),
   ]);
 
   return (
@@ -92,6 +95,13 @@ export default async function StudentPage({ params, searchParams }: StudentPageP
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Financeiro</CardTitle></CardHeader>
+        <CardContent>
+          {charges.length === 0 ? <p className="py-4 text-center text-sm text-muted-foreground">Nenhuma cobrança registrada para este aluno.</p> : <div className="divide-y">{charges.map((charge) => <div key={charge.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm font-medium">{charge.description}</p><p className="text-sm text-muted-foreground">Vencimento: {formatDateKey(charge.due_date)}</p></div><div className="flex items-center justify-between gap-3 sm:justify-end"><p className="font-medium">{formatBrlFromCents(charge.amount_cents)}</p><Badge variant={charge.status === "paid" ? "secondary" : "outline"}>{chargeStatusLabels[charge.status]}</Badge></div></div>)}</div>}
         </CardContent>
       </Card>
 

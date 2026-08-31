@@ -86,6 +86,16 @@ export function localDayRange(dateKey: string, timeZone: string) {
   return { start, end };
 }
 
+export function localMonthRange(value: string | Date, timeZone: string) {
+  const dateKey = localDateKey(value, timeZone);
+  const [year, month] = dateKey.split("-").map(Number);
+  const nextMonth = new Date(Date.UTC(year, month, 1)).toISOString().slice(0, 7);
+  const start = localDateTimeToUtc(`${dateKey.slice(0, 7)}-01T00:00`, timeZone);
+  const end = localDateTimeToUtc(`${nextMonth}-01T00:00`, timeZone);
+  if (!start || !end) throw new Error("Mês local inválido.");
+  return { start, end };
+}
+
 export function formatLessonDate(value: string | Date, timeZone: string) {
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone,

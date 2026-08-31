@@ -143,31 +143,39 @@ export async function rescheduleLesson(formData: FormData) {
   redirect(`/agenda/${id.data}?mensagem=Aula remarcada.`);
 }
 
-async function changeLessonStatus(formData: FormData, status: "completed" | "cancelled") {
+async function lessonStatusContext(formData: FormData) {
   const id = lessonIdSchema.safeParse(formData.get("lesson_id"));
   if (!id.success) redirect("/agenda");
   const { supabase, user } = await actionContext();
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("lessons")
-    .update({ status })
+    .select("id, student_id")
     .eq("id", id.data)
     .eq("owner_id", user.id)
-    .eq("status", "scheduled")
-    .select("id, student_id")
-    .single();
-  if (error || !data) redirect(`/agenda/${id.data}?erro=lesson_not_scheduled`);
-  revalidatePath("/agenda");
-  revalidatePath(`/agenda/${id.data}`);
-  revalidatePath(`/alunos/${data.student_id}`);
-  redirect(`/agenda/${id.data}?mensagem=Aula ${status === "completed" ? "realizada" : "cancelada"}.`);
+    .maybeSingle();
+  if (!data) redirect(`/agenda/${id.data}?erro=lesson_not_scheduled`);
+  return { id: id.data, supabase, lesson: data };
 }
 
 export async function completeLesson(formData: FormData) {
-  return changeLessonStatus(formData, "completed");
+  const { id, supabase, lesson } = await lessonStatusContext(formData);
+  const { error } = await supabase.rpc("complete_lesson", { p_lesson_id: id });
+  if (error) redirect(`/agenda/${id}?erro=lesson_complete_failed`);
+  revalidatePath("/agenda");
+  revalidatePath("/financeiro");
+  revalidatePath(`/agenda/${id}`);
+  revalidatePath(`/alunos/${lesson.student_id}`);
+  redirect(`/agenda/${id}?mensagem=Aula realizada.`);
 }
 
 export async function cancelLesson(formData: FormData) {
-  return changeLessonStatus(formData, "cancelled");
+  const { id, supabase, lesson } = await lessonStatusContext(formData);
+  const { error } = await supabase.rpc("cancel_lesson", { p_lesson_id: id });
+  if (error) redirect(`/agenda/${id}?erro=lesson_not_scheduled`);
+  revalidatePath("/agenda");
+  revalidatePath(`/agenda/${id}`);
+  revalidatePath(`/alunos/${lesson.student_id}`);
+  redirect(`/agenda/${id}?mensagem=Aula cancelada.`);
 }
 
 function recurrenceValues(formData: FormData) {

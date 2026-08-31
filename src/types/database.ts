@@ -2,6 +2,8 @@ export type AccountStatus = "trial" | "active" | "expired";
 export type StudentStatus = "active" | "inactive";
 export type BillingModel = "per_lesson" | "monthly" | "package";
 export type LessonStatus = "scheduled" | "completed" | "cancelled";
+export type ChargeStatus = "pending" | "paid";
+export type ChargeBillingModel = "per_lesson" | "monthly";
 
 export type Database = {
   public: {
@@ -158,6 +160,44 @@ export type Database = {
         };
         Relationships: [];
       };
+      charges: {
+        Row: {
+          id: string;
+          owner_id: string;
+          student_id: string;
+          lesson_id: string | null;
+          billing_model: ChargeBillingModel;
+          description: string;
+          amount_cents: number;
+          reference_month: string | null;
+          due_date: string;
+          status: ChargeStatus;
+          paid_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id?: string;
+          student_id: string;
+          lesson_id?: string | null;
+          billing_model: ChargeBillingModel;
+          description: string;
+          amount_cents: number;
+          reference_month?: string | null;
+          due_date: string;
+          status?: ChargeStatus;
+          paid_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          status?: ChargeStatus;
+          paid_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<never, never>;
     Functions: {
@@ -190,6 +230,22 @@ export type Database = {
       maintain_weekly_recurrences: {
         Args: Record<string, never>;
         Returns: number;
+      };
+      complete_lesson: {
+        Args: { p_lesson_id: string };
+        Returns: string | null;
+      };
+      cancel_lesson: {
+        Args: { p_lesson_id: string };
+        Returns: boolean;
+      };
+      create_monthly_charge: {
+        Args: { p_student_id: string; p_reference_month: string; p_due_date: string };
+        Returns: string;
+      };
+      mark_charge_paid: {
+        Args: { p_charge_id: string };
+        Returns: string;
       };
     };
     Enums: Record<never, never>;

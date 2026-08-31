@@ -6,6 +6,7 @@ import {
   intervalsOverlap,
   formatLocalTimeRange,
   localDateTimeToUtc,
+  localMonthRange,
   startOfWeekDateKey,
   utcToLocalInput,
 } from "../../src/lib/dates/timezone.ts"
@@ -32,4 +33,10 @@ test("considera sobreposição real, mas permite horários adjacentes", () => {
   assert.equal(intervalsOverlap(start, end, new Date("2026-09-01T17:30:00.000Z"), new Date("2026-09-01T18:30:00.000Z")), true)
   assert.equal(intervalsOverlap(start, end, new Date("2026-09-01T18:00:00.000Z"), new Date("2026-09-01T19:00:00.000Z")), false)
   assert.equal(durationInMinutes(start.toISOString(), end.toISOString()), 60)
+})
+
+test("calcula os limites do mês no timezone do professor", () => {
+  const range = localMonthRange("2026-09-15T12:00:00Z", "America/Bahia")
+  assert.equal(range.start.toISOString(), "2026-09-01T03:00:00.000Z")
+  assert.equal(range.end.toISOString(), "2026-10-01T03:00:00.000Z")
 })
