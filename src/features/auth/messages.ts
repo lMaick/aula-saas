@@ -28,6 +28,15 @@ const knownMessages: Record<string, string> = {
   charge_not_pending: "Essa cobrança não está pendente.",
   charge_payment_failed: "Não foi possível registrar o pagamento.",
   lesson_complete_failed: "Não foi possível concluir a aula.",
+  package_invalid: "Revise os dados do pacote.",
+  package_student_invalid: "Somente alunos ativos no modelo pacote podem receber um pacote.",
+  package_active_exists: "Este aluno já possui um pacote ativo.",
+  package_create_failed: "Não foi possível criar o pacote.",
+  package_not_active: "Este pacote não está ativo.",
+  package_cancel_failed: "Não foi possível cancelar o pacote.",
+  package_not_available: "Este aluno não possui um pacote ativo.",
+  package_expired: "O pacote deste aluno está fora da validade.",
+  package_balance_empty: "Este pacote não possui aulas restantes.",
 };
 
 export function authErrorMessage(code: string) {

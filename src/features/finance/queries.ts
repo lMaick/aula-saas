@@ -7,7 +7,7 @@ import { localDateKey, localMonthRange } from "@/lib/dates/timezone";
 import { createClient } from "@/lib/supabase/server";
 
 const chargeColumns =
-  "id, owner_id, student_id, lesson_id, billing_model, description, amount_cents, reference_month, due_date, status, paid_at, created_at, updated_at";
+  "id, owner_id, student_id, lesson_id, package_id, billing_model, description, amount_cents, reference_month, due_date, status, paid_at, created_at, updated_at";
 
 async function financeContext() {
   const supabase = await createClient();

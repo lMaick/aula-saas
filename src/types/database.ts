@@ -3,7 +3,8 @@ export type StudentStatus = "active" | "inactive";
 export type BillingModel = "per_lesson" | "monthly" | "package";
 export type LessonStatus = "scheduled" | "completed" | "cancelled";
 export type ChargeStatus = "pending" | "paid";
-export type ChargeBillingModel = "per_lesson" | "monthly";
+export type ChargeBillingModel = "per_lesson" | "monthly" | "package";
+export type PackageStatus = "active" | "completed" | "cancelled";
 
 export type Database = {
   public: {
@@ -166,6 +167,7 @@ export type Database = {
           owner_id: string;
           student_id: string;
           lesson_id: string | null;
+          package_id: string | null;
           billing_model: ChargeBillingModel;
           description: string;
           amount_cents: number;
@@ -181,6 +183,7 @@ export type Database = {
           owner_id?: string;
           student_id: string;
           lesson_id?: string | null;
+          package_id?: string | null;
           billing_model: ChargeBillingModel;
           description: string;
           amount_cents: number;
@@ -194,6 +197,40 @@ export type Database = {
         Update: {
           status?: ChargeStatus;
           paid_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      packages: {
+        Row: {
+          id: string;
+          owner_id: string;
+          student_id: string;
+          total_lessons: number;
+          used_lessons: number;
+          amount_cents: number;
+          status: PackageStatus;
+          starts_on: string;
+          ends_on: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id?: string;
+          student_id: string;
+          total_lessons: number;
+          used_lessons?: number;
+          amount_cents: number;
+          status?: PackageStatus;
+          starts_on: string;
+          ends_on?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          used_lessons?: number;
+          status?: PackageStatus;
           updated_at?: string;
         };
         Relationships: [];
@@ -246,6 +283,20 @@ export type Database = {
       mark_charge_paid: {
         Args: { p_charge_id: string };
         Returns: string;
+      };
+      create_lesson_package: {
+        Args: {
+          p_student_id: string;
+          p_total_lessons: number;
+          p_amount_cents: number;
+          p_starts_on: string;
+          p_ends_on?: string | null;
+        };
+        Returns: string;
+      };
+      cancel_lesson_package: {
+        Args: { p_package_id: string };
+        Returns: boolean;
       };
     };
     Enums: Record<never, never>;

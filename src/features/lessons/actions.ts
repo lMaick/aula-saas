@@ -160,7 +160,16 @@ async function lessonStatusContext(formData: FormData) {
 export async function completeLesson(formData: FormData) {
   const { id, supabase, lesson } = await lessonStatusContext(formData);
   const { error } = await supabase.rpc("complete_lesson", { p_lesson_id: id });
-  if (error) redirect(`/agenda/${id}?erro=lesson_complete_failed`);
+  if (error) {
+    const code = error.message.includes("package_not_available")
+      ? "package_not_available"
+      : error.message.includes("package_expired")
+        ? "package_expired"
+        : error.message.includes("package_balance_empty")
+          ? "package_balance_empty"
+          : "lesson_complete_failed";
+    redirect(`/agenda/${id}?erro=${code}`);
+  }
   revalidatePath("/agenda");
   revalidatePath("/financeiro");
   revalidatePath(`/agenda/${id}`);

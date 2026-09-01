@@ -16,6 +16,10 @@ import { formatBrlFromCents } from "@/lib/money/brl";
 import { cn } from "@/lib/utils";
 import { getChargesForStudent } from "@/features/finance/queries";
 import { chargeStatusLabels } from "@/features/finance/constants";
+import { cancelLessonPackage } from "@/features/packages/actions";
+import { packageProgress } from "@/features/packages/calculations";
+import { packageStatusLabels } from "@/features/packages/constants";
+import { getPackagesForStudent } from "@/features/packages/queries";
 
 type StudentPageProps = {
   params: Promise<{ id: string }>;
@@ -31,12 +35,15 @@ const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
 
 export default async function StudentPage({ params, searchParams }: StudentPageProps) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const [student, lessonHistory, recurrenceHistory, charges] = await Promise.all([
+  const [student, lessonHistory, recurrenceHistory, charges, packages] = await Promise.all([
     getStudentById(id),
     getLessonsForStudent(id),
     getRecurrencesForStudent(id),
     getChargesForStudent(id),
+    getPackagesForStudent(id),
   ]);
+  const activePackage = packages.find((lessonPackage) => lessonPackage.status === "active");
+  const previousPackages = packages.filter((lessonPackage) => lessonPackage.status !== "active");
 
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-4 py-8">
@@ -69,6 +76,22 @@ export default async function StudentPage({ params, searchParams }: StudentPageP
           </div>
         </CardContent>
       </Card>
+
+      {student.billing_model === "package" ? <Card>
+        <CardHeader className="flex flex-row items-center justify-between gap-3"><CardTitle>Pacote de aulas</CardTitle>{!activePackage && student.status === "active" ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={`/alunos/${student.id}/pacotes/novo`}>Criar pacote</Link> : null}</CardHeader>
+        <CardContent className="space-y-5">
+          {activePackage ? (() => {
+            const progress = packageProgress(activePackage.total_lessons, activePackage.used_lessons);
+            return <div className="space-y-4 rounded-lg border p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2"><p className="font-medium">Pacote atual</p><Badge variant={progress.nearEnd ? "destructive" : "default"}>{progress.nearEnd ? "Pacote perto do fim" : "Ativo"}</Badge></div>
+              <div><div className="mb-2 flex justify-between text-sm"><span>{activePackage.used_lessons} de {activePackage.total_lessons} aulas utilizadas</span><span>{progress.remaining} restantes</span></div><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${progress.percentage}%` }} /></div></div>
+              <div className="grid gap-3 text-sm sm:grid-cols-2"><div><p className="text-xs text-muted-foreground">Valor</p><p>{formatBrlFromCents(activePackage.amount_cents)}</p></div><div><p className="text-xs text-muted-foreground">Início</p><p>{formatDateKey(activePackage.starts_on)}</p></div><div><p className="text-xs text-muted-foreground">Data final</p><p>{activePackage.ends_on ? formatDateKey(activePackage.ends_on) : "Sem data final"}</p></div></div>
+              <form action={cancelLessonPackage}><input type="hidden" name="package_id" value={activePackage.id} /><Button type="submit" size="sm" variant="outline">Cancelar pacote</Button></form>
+            </div>;
+          })() : <p className="text-sm text-muted-foreground">Nenhum pacote ativo.</p>}
+          {previousPackages.length ? <div className="space-y-3"><h3 className="text-sm font-medium">Histórico</h3>{previousPackages.map((lessonPackage) => <div key={lessonPackage.id} className="flex flex-col gap-2 rounded-lg border p-3 text-sm sm:flex-row sm:items-center sm:justify-between"><div><p className="font-medium">{lessonPackage.used_lessons} de {lessonPackage.total_lessons} aulas utilizadas</p><p className="text-muted-foreground">{formatDateKey(lessonPackage.starts_on)}{lessonPackage.ends_on ? ` até ${formatDateKey(lessonPackage.ends_on)}` : ""}</p></div><div className="flex items-center justify-between gap-3"><span>{formatBrlFromCents(lessonPackage.amount_cents)}</span><Badge variant="secondary">{packageStatusLabels[lessonPackage.status]}</Badge></div></div>)}</div> : null}
+        </CardContent>
+      </Card> : null}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3"><CardTitle>Horários fixos</CardTitle>{student.status === "active" ? <Link className={buttonVariants({ variant: "outline", size: "sm" })} href={`/alunos/${student.id}/horarios/novo`}>Adicionar</Link> : null}</CardHeader>
