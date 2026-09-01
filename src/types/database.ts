@@ -1,7 +1,7 @@
 export type AccountStatus = "trial" | "active" | "expired";
 export type StudentStatus = "active" | "inactive";
 export type BillingModel = "per_lesson" | "monthly" | "package";
-export type LessonStatus = "scheduled" | "completed" | "cancelled";
+export type LessonStatus = "scheduled" | "completed" | "cancelled" | "makeup_pending" | "made_up";
 export type ChargeStatus = "pending" | "paid";
 export type ChargeBillingModel = "per_lesson" | "monthly" | "package";
 export type PackageStatus = "active" | "completed" | "cancelled";
@@ -98,6 +98,9 @@ export type Database = {
           recurrence_id: string | null;
           recurrence_date: string | null;
           recurrence_managed: boolean;
+          is_makeup: boolean;
+          makeup_for_lesson_id: string | null;
+          reserved_package_id: string | null;
         };
         Insert: {
           id?: string;
@@ -112,6 +115,9 @@ export type Database = {
           recurrence_id?: string | null;
           recurrence_date?: string | null;
           recurrence_managed?: boolean;
+          is_makeup?: boolean;
+          makeup_for_lesson_id?: string | null;
+          reserved_package_id?: string | null;
         };
         Update: {
           starts_at?: string;
@@ -120,6 +126,9 @@ export type Database = {
           notes?: string | null;
           updated_at?: string;
           recurrence_managed?: boolean;
+          is_makeup?: boolean;
+          makeup_for_lesson_id?: string | null;
+          reserved_package_id?: string | null;
         };
         Relationships: [];
       };
@@ -275,6 +284,14 @@ export type Database = {
       cancel_lesson: {
         Args: { p_lesson_id: string };
         Returns: boolean;
+      };
+      cancel_lesson_with_makeup: {
+        Args: { p_lesson_id: string };
+        Returns: boolean;
+      };
+      schedule_makeup_lesson: {
+        Args: { p_original_lesson_id: string; p_starts_at: string; p_ends_at: string };
+        Returns: string;
       };
       create_monthly_charge: {
         Args: { p_student_id: string; p_reference_month: string; p_due_date: string };

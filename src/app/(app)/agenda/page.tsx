@@ -23,6 +23,8 @@ const statusVariants: Record<LessonStatus, "default" | "secondary" | "outline"> 
   scheduled: "default",
   completed: "secondary",
   cancelled: "outline",
+  makeup_pending: "outline",
+  made_up: "secondary",
 };
 
 export default async function AgendaPage({ searchParams }: AgendaPageProps) {
@@ -87,7 +89,7 @@ export default async function AgendaPage({ searchParams }: AgendaPageProps) {
                           <p className="font-semibold tabular-nums">{formatLessonTime(lesson.starts_at, timeZone)}</p>
                           <div className="min-w-0">
                             <p className="truncate font-medium">{lesson.studentName}</p>
-                            <p className="text-sm text-muted-foreground">{durationInMinutes(lesson.starts_at, lesson.ends_at)} minutos</p>
+                            <p className="text-sm text-muted-foreground">{durationInMinutes(lesson.starts_at, lesson.ends_at)} minutos{lesson.is_makeup ? " • Reposição" : ""}</p>
                           </div>
                           <Badge className="col-start-2 w-fit sm:col-start-auto" variant={statusVariants[lesson.status]}>{lessonStatusLabels[lesson.status]}</Badge>
                         </CardContent>

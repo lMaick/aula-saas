@@ -6,6 +6,8 @@ export const lessonStatusLabels: Record<LessonStatus, string> = {
   scheduled: "Agendada",
   completed: "Realizada",
   cancelled: "Cancelada",
+  makeup_pending: "Reposição pendente",
+  made_up: "Reposta",
 };
 
 export const weekdayLabels: Record<number, string> = {

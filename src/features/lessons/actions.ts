@@ -167,6 +167,10 @@ export async function completeLesson(formData: FormData) {
         ? "package_expired"
         : error.message.includes("package_balance_empty")
           ? "package_balance_empty"
+          : error.message.includes("package_reservation_missing")
+            ? "package_reservation_missing"
+            : error.message.includes("makeup_original_invalid")
+              ? "makeup_original_invalid"
           : "lesson_complete_failed";
     redirect(`/agenda/${id}?erro=${code}`);
   }
@@ -185,6 +189,66 @@ export async function cancelLesson(formData: FormData) {
   revalidatePath(`/agenda/${id}`);
   revalidatePath(`/alunos/${lesson.student_id}`);
   redirect(`/agenda/${id}?mensagem=Aula cancelada.`);
+}
+
+export async function cancelLessonWithMakeup(formData: FormData) {
+  const { id, supabase, lesson } = await lessonStatusContext(formData);
+  const { error } = await supabase.rpc("cancel_lesson_with_makeup", { p_lesson_id: id });
+  if (error) {
+    const code = error.message.includes("package_not_available")
+      ? "package_not_available"
+      : error.message.includes("package_expired")
+        ? "package_expired"
+        : error.message.includes("package_balance_empty")
+          ? "package_balance_empty"
+          : "makeup_cancel_failed";
+    redirect(`/agenda/${id}?erro=${code}`);
+  }
+  revalidatePath("/agenda");
+  revalidatePath(`/agenda/${id}`);
+  revalidatePath(`/alunos/${lesson.student_id}`);
+  redirect(`/agenda/${id}?mensagem=Reposição pendente registrada.`);
+}
+
+export async function scheduleMakeupLesson(formData: FormData) {
+  const originalId = lessonIdSchema.safeParse(formData.get("original_lesson_id"));
+  const parsed = lessonFormSchema.safeParse({
+    studentId: formData.get("student_id"),
+    localDateTime: formData.get("starts_at_local"),
+    durationMinutes: formData.get("duration_minutes"),
+    notes: undefined,
+  });
+  if (!originalId.success || !parsed.success) redirect("/agenda?erro=makeup_invalid");
+  const { supabase, user, timeZone } = await actionContext();
+  const { data: original } = await supabase
+    .from("lessons")
+    .select("id, student_id, status, is_makeup")
+    .eq("id", originalId.data)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+  if (!original || original.is_makeup || original.status !== "makeup_pending" || original.student_id !== parsed.data.studentId) {
+    redirect(`/agenda/${originalId.data}?erro=makeup_original_invalid`);
+  }
+  const startsAt = localDateTimeToUtc(parsed.data.localDateTime, timeZone);
+  if (!startsAt) redirect(`/agenda/${original.id}/reposicao/nova?erro=makeup_invalid`);
+  const endsAt = new Date(startsAt.getTime() + parsed.data.durationMinutes * 60_000);
+  const { data, error } = await supabase.rpc("schedule_makeup_lesson", {
+    p_original_lesson_id: original.id,
+    p_starts_at: startsAt.toISOString(),
+    p_ends_at: endsAt.toISOString(),
+  });
+  if (error || !data) {
+    const code = error?.message.includes("lesson_conflict")
+      ? "lesson_conflict"
+      : error?.message.includes("makeup_already_scheduled")
+        ? "makeup_already_scheduled"
+        : "makeup_create_failed";
+    redirect(`/agenda/${original.id}/reposicao/nova?erro=${code}`);
+  }
+  revalidatePath("/agenda");
+  revalidatePath(`/agenda/${original.id}`);
+  revalidatePath(`/alunos/${original.student_id}`);
+  redirect(`/agenda/${data}?mensagem=Reposição agendada.`);
 }
 
 function recurrenceValues(formData: FormData) {

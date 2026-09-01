@@ -44,6 +44,7 @@ export default async function StudentPage({ params, searchParams }: StudentPageP
   ]);
   const activePackage = packages.find((lessonPackage) => lessonPackage.status === "active");
   const previousPackages = packages.filter((lessonPackage) => lessonPackage.status !== "active");
+  const pendingMakeups = lessonHistory.lessons.filter((lesson) => lesson.status === "makeup_pending");
 
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-4 py-8">
@@ -74,6 +75,16 @@ export default async function StudentPage({ params, searchParams }: StudentPageP
             <p className="text-xs text-muted-foreground">Observações</p>
             <p className="mt-1 whitespace-pre-wrap">{student.notes || "Nenhuma observação."}</p>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Reposições pendentes</CardTitle></CardHeader>
+        <CardContent>
+          {pendingMakeups.length === 0 ? <p className="py-4 text-center text-sm text-muted-foreground">Nenhuma reposição pendente.</p> : <div className="divide-y">{pendingMakeups.map((lesson) => {
+            const replacement = lessonHistory.lessons.find((candidate) => candidate.makeup_for_lesson_id === lesson.id && candidate.status === "scheduled");
+            return <div key={lesson.id} className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm font-medium">Aula de {formatLessonDate(lesson.starts_at, lessonHistory.timeZone)}</p><p className="text-sm text-muted-foreground">{replacement ? `Reposição em ${formatLessonDate(replacement.starts_at, lessonHistory.timeZone)} às ${formatLessonTime(replacement.starts_at, lessonHistory.timeZone)}` : "Ainda não agendada"}</p></div><Link className={buttonVariants({ variant: "outline", size: "sm" })} href={replacement ? `/agenda/${replacement.id}` : `/agenda/${lesson.id}/reposicao/nova`}>{replacement ? "Ver reposição" : "Agendar"}</Link></div>;
+          })}</div>}
         </CardContent>
       </Card>
 
@@ -113,7 +124,7 @@ export default async function StudentPage({ params, searchParams }: StudentPageP
               {lessonHistory.lessons.map((lesson) => (
                 <Link key={lesson.id} href={`/agenda/${lesson.id}`} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between">
                   <div><p className="text-sm font-medium capitalize">{formatLessonDate(lesson.starts_at, lessonHistory.timeZone)}</p><p className="text-sm text-muted-foreground">{formatLessonTime(lesson.starts_at, lessonHistory.timeZone)}</p></div>
-                  <Badge variant={lesson.status === "scheduled" ? "default" : lesson.status === "completed" ? "secondary" : "outline"}>{lessonStatusLabels[lesson.status]}</Badge>
+                  <Badge variant={lesson.status === "scheduled" ? "default" : lesson.status === "completed" ? "secondary" : "outline"}>{lesson.is_makeup && lesson.status === "completed" ? "Reposição realizada" : lessonStatusLabels[lesson.status]}</Badge>
                 </Link>
               ))}
             </div>

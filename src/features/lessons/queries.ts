@@ -12,7 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 const lessonColumns =
-  "id, owner_id, student_id, starts_at, ends_at, status, notes, created_at, updated_at, recurrence_id, recurrence_date, recurrence_managed";
+  "id, owner_id, student_id, starts_at, ends_at, status, notes, created_at, updated_at, recurrence_id, recurrence_date, recurrence_managed, is_makeup, makeup_for_lesson_id, reserved_package_id";
 
 async function lessonContext() {
   const supabase = await createClient();
@@ -112,7 +112,24 @@ export async function getLessonById(rawId: string) {
     .eq("owner_id", user.id)
     .maybeSingle();
   if (!student) notFound();
-  return { lesson, student, timeZone };
+  const { data: originalLesson } = lesson.makeup_for_lesson_id
+    ? await supabase
+        .from("lessons")
+        .select(lessonColumns)
+        .eq("id", lesson.makeup_for_lesson_id)
+        .eq("owner_id", user.id)
+        .maybeSingle()
+    : { data: null };
+  const { data: scheduledMakeup } = !lesson.is_makeup && lesson.status === "makeup_pending"
+    ? await supabase
+        .from("lessons")
+        .select(lessonColumns)
+        .eq("makeup_for_lesson_id", lesson.id)
+        .eq("owner_id", user.id)
+        .eq("status", "scheduled")
+        .maybeSingle()
+    : { data: null };
+  return { lesson, student, timeZone, originalLesson, scheduledMakeup };
 }
 
 export async function getLessonsForStudent(studentId: string) {

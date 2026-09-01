@@ -37,6 +37,13 @@ const knownMessages: Record<string, string> = {
   package_not_available: "Este aluno não possui um pacote ativo.",
   package_expired: "O pacote deste aluno está fora da validade.",
   package_balance_empty: "Este pacote não possui aulas restantes.",
+  package_reservation_missing: "Não foi possível localizar a reserva desta reposição.",
+  package_has_makeup_reservations: "Este pacote possui reposições pendentes e não pode ser cancelado.",
+  makeup_invalid: "Revise a data, o horário e a duração da reposição.",
+  makeup_original_invalid: "Esta aula não possui uma reposição pendente válida.",
+  makeup_already_scheduled: "Já existe uma reposição agendada para esta aula.",
+  makeup_create_failed: "Não foi possível agendar a reposição.",
+  makeup_cancel_failed: "Não foi possível registrar a reposição pendente.",
 };
 
 export function authErrorMessage(code: string) {

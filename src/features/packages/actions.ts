@@ -68,7 +68,7 @@ export async function cancelLessonPackage(formData: FormData) {
   const { error } = await supabase.rpc("cancel_lesson_package", {
     p_package_id: lessonPackage.id,
   });
-  if (error) redirect(`/alunos/${lessonPackage.student_id}?erro=package_cancel_failed`);
+  if (error) redirect(`/alunos/${lessonPackage.student_id}?erro=${error.message.includes("package_has_makeup_reservations") ? "package_has_makeup_reservations" : "package_cancel_failed"}`);
   revalidatePath(`/alunos/${lessonPackage.student_id}`);
   redirect(`/alunos/${lessonPackage.student_id}?mensagem=Pacote cancelado.`);
 }

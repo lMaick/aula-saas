@@ -4,7 +4,7 @@ import { FormMessage } from "@/components/shared/form-message";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cancelLesson, completeLesson } from "@/features/lessons/actions";
+import { cancelLesson, cancelLessonWithMakeup, completeLesson } from "@/features/lessons/actions";
 import { lessonStatusLabels } from "@/features/lessons/constants";
 import { getLessonById } from "@/features/lessons/queries";
 import { durationInMinutes, formatLessonDate, formatLessonTime } from "@/lib/dates/timezone";
@@ -17,7 +17,7 @@ type LessonPageProps = {
 
 export default async function LessonPage({ params, searchParams }: LessonPageProps) {
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const { lesson, student, timeZone } = await getLessonById(id);
+  const { lesson, student, timeZone, originalLesson, scheduledMakeup } = await getLessonById(id);
   const scheduled = lesson.status === "scheduled";
 
   return (
@@ -30,6 +30,7 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
             <h1 className="text-2xl font-semibold tracking-tight">Aula com {student.name}</h1>
             <Badge variant={lesson.status === "scheduled" ? "default" : lesson.status === "completed" ? "secondary" : "outline"}>{lessonStatusLabels[lesson.status]}</Badge>
             {lesson.recurrence_id ? <Badge variant="outline">Aula recorrente</Badge> : null}
+            {lesson.is_makeup ? <Badge variant="outline">Reposição</Badge> : null}
           </div>
         </div>
         {scheduled ? <Link className={cn(buttonVariants({ variant: "outline" }), "w-full sm:w-auto")} href={`/agenda/${lesson.id}/editar`}>Remarcar</Link> : null}
@@ -46,12 +47,17 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
         </CardContent>
       </Card>
 
+      {lesson.is_makeup && originalLesson ? <Card><CardContent className="py-4 text-sm">Reposição da aula de <Link className="font-medium underline" href={`/agenda/${originalLesson.id}`}>{formatLessonDate(originalLesson.starts_at, timeZone)}</Link>.</CardContent></Card> : null}
+
+      {lesson.status === "makeup_pending" ? <Card><CardHeader><CardTitle className="text-base">Reposição pendente</CardTitle></CardHeader><CardContent className="space-y-3">{scheduledMakeup ? <p className="text-sm">Reposição agendada para <Link className="font-medium underline" href={`/agenda/${scheduledMakeup.id}`}>{formatLessonDate(scheduledMakeup.starts_at, timeZone)} às {formatLessonTime(scheduledMakeup.starts_at, timeZone)}</Link>.</p> : <><p className="text-sm text-muted-foreground">Esta aula ainda precisa ser reposta.</p><Link className={buttonVariants()} href={`/agenda/${lesson.id}/reposicao/nova`}>Agendar reposição</Link></>}</CardContent></Card> : null}
+
       {scheduled ? (
         <Card>
           <CardHeader><CardTitle className="text-base">Ações da aula</CardTitle></CardHeader>
           <CardContent className="flex flex-col gap-3 sm:flex-row">
             <form action={completeLesson}><input type="hidden" name="lesson_id" value={lesson.id} /><Button className="w-full sm:w-auto" type="submit">Marcar como realizada</Button></form>
             <form action={cancelLesson}><input type="hidden" name="lesson_id" value={lesson.id} /><Button className="w-full sm:w-auto" type="submit" variant="outline">Cancelar aula</Button></form>
+            {!lesson.is_makeup ? <form action={cancelLessonWithMakeup}><input type="hidden" name="lesson_id" value={lesson.id} /><Button className="w-full sm:w-auto" type="submit" variant="outline">Cancelar e deixar reposição pendente</Button></form> : null}
           </CardContent>
         </Card>
       ) : null}
