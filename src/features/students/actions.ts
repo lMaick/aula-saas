@@ -71,7 +71,12 @@ export async function updateStudent(formData: FormData) {
     .single();
 
   if (error || !data) {
-    redirect(`/alunos/${id.data}/editar?erro=student_update_failed`);
+    const code = error?.message.includes("student_has_pending_makeups")
+      ? "student_has_pending_makeups"
+      : error?.message.includes("student_has_active_package")
+        ? "student_has_active_package"
+        : "student_update_failed";
+    redirect(`/alunos/${id.data}/editar?erro=${code}`);
   }
 
   revalidatePath("/alunos");

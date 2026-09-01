@@ -9,6 +9,8 @@ const knownMessages: Record<string, string> = {
   student_invalid: "Revise os dados do aluno e tente novamente.",
   student_create_failed: "Não foi possível cadastrar o aluno.",
   student_update_failed: "Não foi possível atualizar o aluno.",
+  student_has_pending_makeups: "Conclua as reposições pendentes antes de alterar o modelo de cobrança deste aluno.",
+  student_has_active_package: "Finalize ou cancele o pacote ativo antes de alterar o modelo de cobrança deste aluno.",
   lesson_invalid: "Revise os dados da aula e tente novamente.",
   lesson_student_invalid: "Selecione um aluno ativo da sua conta.",
   lesson_conflict: "Já existe uma aula agendada nesse horário.",
