@@ -20,6 +20,9 @@ import { cancelLessonPackage } from "@/features/packages/actions";
 import { packageProgress } from "@/features/packages/calculations";
 import { packageStatusLabels } from "@/features/packages/constants";
 import { getPackagesForStudent } from "@/features/packages/queries";
+import { createWhatsAppUrl } from "@/features/whatsapp/links";
+import { buildStudentContactMessage } from "@/features/whatsapp/messages";
+import { WhatsAppButton } from "@/features/whatsapp/whatsapp-button";
 
 type StudentPageProps = {
   params: Promise<{ id: string }>;
@@ -45,6 +48,10 @@ export default async function StudentPage({ params, searchParams }: StudentPageP
   const activePackage = packages.find((lessonPackage) => lessonPackage.status === "active");
   const previousPackages = packages.filter((lessonPackage) => lessonPackage.status !== "active");
   const pendingMakeups = lessonHistory.lessons.filter((lesson) => lesson.status === "makeup_pending");
+  const whatsappUrl = createWhatsAppUrl(
+    student.whatsapp,
+    buildStudentContactMessage(student.name),
+  );
 
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-4 py-8">
@@ -59,9 +66,17 @@ export default async function StudentPage({ params, searchParams }: StudentPageP
             </Badge>
           </div>
         </div>
-        <Link className={cn(buttonVariants({ variant: "outline" }), "w-full sm:w-auto")} href={`/alunos/${student.id}/editar`}>
-          Editar aluno
-        </Link>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+          <WhatsAppButton
+            className="w-full sm:w-auto"
+            href={whatsappUrl}
+            invalidStudentHref={`/alunos/${student.id}/editar`}
+            label="Abrir WhatsApp"
+          />
+          <Link className={cn(buttonVariants({ variant: "outline" }), "w-full sm:w-auto")} href={`/alunos/${student.id}/editar`}>
+            Editar aluno
+          </Link>
+        </div>
       </div>
 
       <Card>

@@ -9,6 +9,9 @@ import { lessonStatusLabels } from "@/features/lessons/constants";
 import { getLessonById } from "@/features/lessons/queries";
 import { durationInMinutes, formatLessonDate, formatLessonTime } from "@/lib/dates/timezone";
 import { cn } from "@/lib/utils";
+import { createWhatsAppUrl } from "@/features/whatsapp/links";
+import { buildLessonReminderMessage } from "@/features/whatsapp/messages";
+import { WhatsAppButton } from "@/features/whatsapp/whatsapp-button";
 
 type LessonPageProps = {
   params: Promise<{ id: string }>;
@@ -19,6 +22,13 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
   const [{ id }, query] = await Promise.all([params, searchParams]);
   const { lesson, student, timeZone, originalLesson, scheduledMakeup } = await getLessonById(id);
   const scheduled = lesson.status === "scheduled";
+  const whatsappUrl = scheduled
+    ? createWhatsAppUrl(student.whatsapp, buildLessonReminderMessage({
+        studentName: student.name,
+        startsAt: lesson.starts_at,
+        timeZone,
+      }))
+    : null;
 
   return (
     <main className="mx-auto max-w-3xl space-y-5 px-4 py-8">
@@ -55,6 +65,12 @@ export default async function LessonPage({ params, searchParams }: LessonPagePro
         <Card>
           <CardHeader><CardTitle className="text-base">Ações da aula</CardTitle></CardHeader>
           <CardContent className="flex flex-col gap-3 sm:flex-row">
+            <WhatsAppButton
+              className="w-full sm:w-auto"
+              href={whatsappUrl}
+              invalidStudentHref={`/alunos/${student.id}/editar`}
+              label="Lembrar no WhatsApp"
+            />
             <form action={completeLesson}><input type="hidden" name="lesson_id" value={lesson.id} /><Button className="w-full sm:w-auto" type="submit">Marcar como realizada</Button></form>
             <form action={cancelLesson}><input type="hidden" name="lesson_id" value={lesson.id} /><Button className="w-full sm:w-auto" type="submit" variant="outline">Cancelar aula</Button></form>
             {!lesson.is_makeup ? <form action={cancelLessonWithMakeup}><input type="hidden" name="lesson_id" value={lesson.id} /><Button className="w-full sm:w-auto" type="submit" variant="outline">Cancelar e deixar reposição pendente</Button></form> : null}

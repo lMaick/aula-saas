@@ -10,6 +10,9 @@ import { getFinanceOverview, getMonthlyStudents } from "@/features/finance/queri
 import { formatDateKey } from "@/lib/dates/timezone";
 import { formatBrlFromCents } from "@/lib/money/brl";
 import { cn } from "@/lib/utils";
+import { createWhatsAppUrl } from "@/features/whatsapp/links";
+import { buildChargeReminderMessage, canChargeOnWhatsApp } from "@/features/whatsapp/messages";
+import { WhatsAppButton } from "@/features/whatsapp/whatsapp-button";
 
 type FinancePageProps = {
   searchParams: Promise<{ erro?: string; mensagem?: string }>;
@@ -17,19 +20,28 @@ type FinancePageProps = {
 
 type ChargeItem = Awaited<ReturnType<typeof getFinanceOverview>>["pending"][number];
 
-function ChargeList({ charges, today }: { charges: ChargeItem[]; today: string }) {
+function ChargeList({ charges, today, pixKey }: { charges: ChargeItem[]; today: string; pixKey: string | null }) {
   if (!charges.length) return <p className="py-4 text-center text-sm text-muted-foreground">Nenhuma cobrança nesta seção.</p>;
   return <div className="divide-y">{charges.map((charge) => {
     const overdue = charge.status === "pending" && charge.due_date < today;
+    const whatsappUrl = canChargeOnWhatsApp(charge.status)
+      ? createWhatsAppUrl(charge.studentWhatsapp, buildChargeReminderMessage({
+          studentName: charge.studentName,
+          description: charge.description,
+          amountCents: charge.amount_cents,
+          dueDate: charge.due_date,
+          pixKey,
+        }))
+      : null;
     return <div key={charge.id} className="space-y-3 py-4 first:pt-0 last:pb-0 sm:flex sm:items-center sm:justify-between sm:gap-4 sm:space-y-0">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2"><p className="font-medium">{charge.studentName}</p><Badge variant={overdue ? "destructive" : charge.status === "paid" ? "secondary" : "outline"}>{overdue ? "Atrasada" : chargeStatusLabels[charge.status]}</Badge></div>
         <p className="text-sm text-muted-foreground">{charge.description}</p>
         <p className={cn("mt-1 text-sm", overdue && "text-destructive")}>Vencimento: {formatDateKey(charge.due_date)}</p>
       </div>
-      <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end">
+      <div className="flex flex-col items-stretch gap-2 sm:items-end">
         <p className="font-semibold">{formatBrlFromCents(charge.amount_cents)}</p>
-        {charge.status === "pending" ? <form action={markChargePaid}><input type="hidden" name="charge_id" value={charge.id} /><Button size="sm" type="submit">Marcar como pago</Button></form> : null}
+        {charge.status === "pending" ? <div className="flex flex-col gap-2 sm:flex-row"><WhatsAppButton href={whatsappUrl} invalidStudentHref={`/alunos/${charge.student_id}/editar`} label="Cobrar no WhatsApp" size="sm" /><form action={markChargePaid}><input type="hidden" name="charge_id" value={charge.id} /><Button className="w-full" size="sm" type="submit">Marcar como pago</Button></form></div> : null}
       </div>
     </div>;
   })}</div>;
@@ -63,7 +75,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
       </CardContent>
     </Card>
 
-    <Card><CardHeader><CardTitle>Pendentes</CardTitle></CardHeader><CardContent><ChargeList charges={overview.pending} today={overview.today} /></CardContent></Card>
-    <Card><CardHeader><CardTitle>Pagas</CardTitle></CardHeader><CardContent><ChargeList charges={overview.paid} today={overview.today} /></CardContent></Card>
+    <Card><CardHeader><CardTitle>Pendentes</CardTitle></CardHeader><CardContent><ChargeList charges={overview.pending} pixKey={overview.pixKey} today={overview.today} /></CardContent></Card>
+    <Card><CardHeader><CardTitle>Pagas</CardTitle></CardHeader><CardContent><ChargeList charges={overview.paid} pixKey={overview.pixKey} today={overview.today} /></CardContent></Card>
   </main>;
 }

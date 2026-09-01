@@ -107,7 +107,7 @@ export async function getLessonById(rawId: string) {
 
   const { data: student } = await supabase
     .from("students")
-    .select("id, name")
+    .select("id, name, whatsapp")
     .eq("id", lesson.student_id)
     .eq("owner_id", user.id)
     .maybeSingle();

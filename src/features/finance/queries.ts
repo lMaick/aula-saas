@@ -15,30 +15,35 @@ async function financeContext() {
   if (!user) redirect("/entrar");
   const { data: profile } = await supabase
     .from("profiles")
-    .select("timezone")
+    .select("timezone, pix_key")
     .eq("id", user.id)
     .single();
-  return { supabase, user, timeZone: profile?.timezone || "America/Bahia" };
+  return {
+    supabase,
+    user,
+    timeZone: profile?.timezone || "America/Bahia",
+    pixKey: profile?.pix_key || null,
+  };
 }
 
-async function studentNames(
+async function studentContacts(
   supabase: Awaited<ReturnType<typeof createClient>>,
   ownerId: string,
   studentIds: string[],
 ) {
   const ids = [...new Set(studentIds)];
-  if (!ids.length) return new Map<string, string>();
+  if (!ids.length) return new Map<string, { id: string; name: string; whatsapp: string }>();
   const { data, error } = await supabase
     .from("students")
-    .select("id, name")
+    .select("id, name, whatsapp")
     .eq("owner_id", ownerId)
     .in("id", ids);
   if (error) throw new Error("Não foi possível carregar os alunos das cobranças.");
-  return new Map(data.map((student) => [student.id, student.name]));
+  return new Map(data.map((student) => [student.id, student]));
 }
 
 export async function getFinanceOverview() {
-  const { supabase, user, timeZone } = await financeContext();
+  const { supabase, user, timeZone, pixKey } = await financeContext();
   const { data: charges, error } = await supabase
     .from("charges")
     .select(chargeColumns)
@@ -47,12 +52,13 @@ export async function getFinanceOverview() {
     .order("created_at", { ascending: false });
   if (error) throw new Error("Não foi possível carregar o financeiro.");
 
-  const names = await studentNames(supabase, user.id, charges.map((charge) => charge.student_id));
+  const contacts = await studentContacts(supabase, user.id, charges.map((charge) => charge.student_id));
   const monthRange = localMonthRange(new Date(), timeZone);
   const summary = calculateFinancialSummary(charges, monthRange);
   const withNames = charges.map((charge) => ({
     ...charge,
-    studentName: names.get(charge.student_id) || "Aluno indisponível",
+    studentName: contacts.get(charge.student_id)?.name || "Aluno indisponível",
+    studentWhatsapp: contacts.get(charge.student_id)?.whatsapp || "",
   }));
 
   return {
@@ -61,6 +67,7 @@ export async function getFinanceOverview() {
     summary,
     today: localDateKey(new Date(), timeZone),
     currentMonth: localDateKey(new Date(), timeZone).slice(0, 7),
+    pixKey,
   };
 }
 
