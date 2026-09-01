@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSupabasePublicEnv } from "@/lib/supabase/env";
 import type { Database } from "@/types/database";
 
-const protectedRoutes = ["/area", "/configuracoes"];
+const protectedRoutes = ["/dashboard", "/area", "/configuracoes"];
 const guestOnlyRoutes = ["/entrar", "/cadastrar", "/recuperar-acesso"];
 
 export async function updateSession(request: NextRequest) {
@@ -40,7 +40,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && guestOnlyRoutes.includes(pathname)) {
     const areaUrl = request.nextUrl.clone();
-    areaUrl.pathname = "/area";
+    areaUrl.pathname = "/dashboard";
     areaUrl.search = "";
     return NextResponse.redirect(areaUrl);
   }

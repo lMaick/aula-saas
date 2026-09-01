@@ -32,12 +32,12 @@ export async function signUp(formData: FormData) {
     password: parsed.data.password,
     options: {
       data: { name: parsed.data.name },
-      emailRedirectTo: `${siteUrl}/auth/callback?next=/area`,
+      emailRedirectTo: `${siteUrl}/auth/callback?next=/dashboard`,
     },
   });
 
   if (error) redirect("/cadastrar?erro=email_in_use");
-  if (data.session) redirect("/area");
+  if (data.session) redirect("/dashboard");
 
   redirect(
     "/entrar?mensagem=Confira seu e-mail para confirmar a conta antes de entrar.",
@@ -58,7 +58,7 @@ export async function signIn(formData: FormData) {
   if (error) redirect("/entrar?erro=invalid_credentials");
 
   revalidatePath("/", "layout");
-  redirect("/area");
+  redirect("/dashboard");
 }
 
 export async function signOut() {
@@ -104,5 +104,5 @@ export async function updatePassword(formData: FormData) {
   });
   if (error) redirect("/redefinir-senha?erro=reset_failed");
 
-  redirect("/area?mensagem=Senha atualizada com sucesso.");
+  redirect("/dashboard?mensagem=Senha atualizada com sucesso.");
 }
