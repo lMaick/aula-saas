@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { parseBrlToCents } from "@/lib/money/brl";
+import { parseBrlToCents } from "../../lib/money/brl.ts";
 
 const billingAmount = z.string().trim().transform((value, context) => {
   const cents = parseBrlToCents(value);

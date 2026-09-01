@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSupabasePublicEnv } from "@/lib/supabase/env";
 import type { Database } from "@/types/database";
 
-const protectedRoutes = ["/dashboard", "/area", "/configuracoes"];
+const protectedRoutes = ["/dashboard", "/area", "/configuracoes", "/alunos", "/agenda", "/financeiro", "/onboarding"];
 const guestOnlyRoutes = ["/entrar", "/cadastrar", "/recuperar-acesso"];
 
 export async function updateSession(request: NextRequest) {
@@ -30,12 +30,36 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
   const pathname = request.nextUrl.pathname;
+  const protectedPath = protectedRoutes.some((route) => pathname.startsWith(route));
 
-  if (!user && protectedRoutes.some((route) => pathname.startsWith(route))) {
+  if (!user && protectedPath) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/entrar";
     loginUrl.searchParams.set("mensagem", "Entre para acessar esta página.");
     return NextResponse.redirect(loginUrl);
+  }
+
+  if (user && (protectedPath || guestOnlyRoutes.includes(pathname))) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_completed_at")
+      .eq("id", user.id)
+      .maybeSingle();
+    const onboardingComplete = Boolean(profile?.onboarding_completed_at);
+
+    if (!onboardingComplete && pathname !== "/onboarding") {
+      const onboardingUrl = request.nextUrl.clone();
+      onboardingUrl.pathname = "/onboarding";
+      onboardingUrl.search = "";
+      return NextResponse.redirect(onboardingUrl);
+    }
+
+    if (onboardingComplete && pathname === "/onboarding") {
+      const dashboardUrl = request.nextUrl.clone();
+      dashboardUrl.pathname = "/dashboard";
+      dashboardUrl.search = "";
+      return NextResponse.redirect(dashboardUrl);
+    }
   }
 
   if (user && guestOnlyRoutes.includes(pathname)) {

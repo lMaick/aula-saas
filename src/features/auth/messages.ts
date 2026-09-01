@@ -46,6 +46,14 @@ const knownMessages: Record<string, string> = {
   makeup_already_scheduled: "Já existe uma reposição agendada para esta aula.",
   makeup_create_failed: "Não foi possível agendar a reposição.",
   makeup_cancel_failed: "Não foi possível registrar a reposição pendente.",
+  onboarding_profile_invalid: "Informe seu nome e o que você ensina.",
+  onboarding_profile_failed: "Não foi possível salvar seu perfil.",
+  onboarding_student_invalid: "Revise os dados do primeiro aluno.",
+  onboarding_student_failed: "Não foi possível organizar o primeiro aluno.",
+  onboarding_package_invalid: "Informe uma quantidade válida de aulas para o pacote.",
+  onboarding_schedule_invalid: "Revise o dia, horário e duração da aula.",
+  onboarding_schedule_conflict: "Já existem aulas conflitantes com esse horário nas próximas 8 semanas.",
+  onboarding_schedule_failed: "Não foi possível criar o primeiro horário.",
 };
 
 export function authErrorMessage(code: string) {

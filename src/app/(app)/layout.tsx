@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/features/auth/actions";
@@ -6,6 +7,7 @@ import { getCurrentProfile } from "@/features/profile/queries";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { profile } = await getCurrentProfile();
+  if (!profile.onboarding_completed_at) redirect("/onboarding");
 
   return (
     <div className="min-h-screen bg-muted/30">

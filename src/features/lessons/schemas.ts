@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { isAllowedLessonDuration } from "./durations.ts";
 
-const durationSchema = z.coerce.number().int().refine(isAllowedLessonDuration, {
+export const durationSchema = z.coerce.number().int().refine(isAllowedLessonDuration, {
   message: "Selecione uma duração válida.",
 });
 

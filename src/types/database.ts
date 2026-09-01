@@ -315,6 +315,25 @@ export type Database = {
         Args: { p_package_id: string };
         Returns: boolean;
       };
+      create_onboarding_student: {
+        Args: {
+          p_name: string;
+          p_whatsapp: string;
+          p_billing_model: BillingModel;
+          p_billing_amount_cents: number;
+          p_package_total_lessons?: number | null;
+        };
+        Returns: string;
+      };
+      complete_onboarding_with_schedule: {
+        Args: {
+          p_student_id: string;
+          p_weekday: number;
+          p_local_start_time: string;
+          p_duration_minutes: number;
+        };
+        Returns: string;
+      };
     };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;
