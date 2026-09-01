@@ -1,0 +1,5 @@
+const steps = [["1", "Crie sua conta", "Comece gratuitamente, sem cartão de crédito."], ["2", "Cadastre seu primeiro aluno", "Informe como ele é cobrado e seu horário semanal."], ["3", "Acompanhe tudo pelo painel", "Agenda, pagamentos, pacotes e reposições organizados em um só lugar."]];
+
+export function HowItWorksSection() {
+  return <section className="bg-white py-16 sm:py-20" aria-labelledby="how-title"><div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8"><div className="text-center"><p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Comece em poucos minutos</p><h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl" id="how-title">Como funciona</h2></div><ol className="mt-10 grid gap-8 md:grid-cols-3">{steps.map(([number, title, description]) => <li className="relative text-center md:text-left" key={number}><span className="mx-auto flex size-10 items-center justify-center rounded-full bg-emerald-700 text-sm font-bold text-white md:mx-0">{number}</span><h3 className="mt-4 text-lg font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{description}</p></li>)}</ol></div></section>;
+}
