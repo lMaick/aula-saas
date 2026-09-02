@@ -1,0 +1,30 @@
+import "server-only";
+
+function required(name: string) {
+  const value = process.env[name]?.trim();
+  if (!value) throw new Error(`subscription_config_missing:${name}`);
+  return value;
+}
+
+export function getSubscriptionPlanConfig() {
+  const amountCents = Number(required("AULA_SAAS_MONTHLY_PRICE_CENTS"));
+  if (!Number.isSafeInteger(amountCents) || amountCents <= 0) {
+    throw new Error("subscription_price_invalid");
+  }
+
+  return { amountCents, currency: "BRL" as const };
+}
+
+export function getMercadoPagoConfig() {
+  const appUrl = required("NEXT_PUBLIC_APP_URL");
+  const parsedUrl = new URL(appUrl);
+  if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+    throw new Error("subscription_app_url_invalid");
+  }
+
+  return {
+    accessToken: required("MERCADO_PAGO_ACCESS_TOKEN"),
+    webhookSecret: required("MERCADO_PAGO_WEBHOOK_SECRET"),
+    appUrl: parsedUrl.origin,
+  };
+}

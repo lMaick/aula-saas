@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSupabasePublicEnv } from "@/lib/supabase/env";
 import type { Database } from "@/types/database";
 
-const protectedRoutes = ["/dashboard", "/area", "/configuracoes", "/alunos", "/agenda", "/financeiro", "/onboarding"];
+const protectedRoutes = ["/dashboard", "/area", "/configuracoes", "/alunos", "/agenda", "/financeiro", "/onboarding", "/assinar", "/assinatura/retorno"];
 const guestOnlyRoutes = ["/entrar", "/cadastrar", "/recuperar-acesso"];
 
 export async function updateSession(request: NextRequest) {
@@ -46,8 +46,17 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .maybeSingle();
     const onboardingComplete = Boolean(profile?.onboarding_completed_at);
+    const { data: accountStatus } = await supabase.rpc("normalize_current_account_access");
+    const subscriptionPath = pathname === "/assinar" || pathname === "/assinatura/retorno";
 
-    if (!onboardingComplete && pathname !== "/onboarding") {
+    if (accountStatus === "expired" && !subscriptionPath) {
+      const subscribeUrl = request.nextUrl.clone();
+      subscribeUrl.pathname = "/assinar";
+      subscribeUrl.search = "";
+      return NextResponse.redirect(subscribeUrl);
+    }
+
+    if (accountStatus !== "expired" && !onboardingComplete && pathname !== "/onboarding") {
       const onboardingUrl = request.nextUrl.clone();
       onboardingUrl.pathname = "/onboarding";
       onboardingUrl.search = "";

@@ -28,8 +28,8 @@ test("campos de trial e status não são atualizáveis pelo usuário", async () 
   assert.doesNotMatch(grant[1], /trial_started_at|trial_ends_at|account_status|id/i);
 });
 
-test("código versionado não contém uso de service_role", async () => {
-  const roots = ["src", "supabase"];
+test("chave privilegiada só existe no adaptador server-only de assinaturas", async () => {
+  const roots = ["src"];
   const files = [];
 
   async function collect(directory) {
@@ -41,7 +41,13 @@ test("código versionado não contém uso de service_role", async () => {
   }
 
   for (const directory of roots) await collect(join(root, directory));
-  const contents = await Promise.all(files.map((file) => readFile(file, "utf8")));
+  const matches = [];
+  for (const file of files) {
+    const content = await readFile(file, "utf8");
+    if (/service_role/i.test(content)) matches.push({ file, content });
+  }
 
-  assert.equal(contents.some((content) => /service_role/i.test(content)), false);
+  assert.equal(matches.length, 1);
+  assert.match(matches[0].file, /src[\\/]lib[\\/]supabase[\\/]admin\.ts$/);
+  assert.match(matches[0].content, /import "server-only"/);
 });

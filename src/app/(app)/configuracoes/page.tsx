@@ -5,16 +5,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateProfile } from "@/features/profile/actions";
 import { getCurrentProfile } from "@/features/profile/queries";
+import { remainingTrialDays } from "@/features/subscriptions/calculations";
+import { cancelCurrentSubscription, createSubscriptionCheckout } from "@/features/subscriptions/actions";
+import { getSubscriptionPlanConfig } from "@/features/subscriptions/config";
+import { getCurrentSubscription } from "@/features/subscriptions/queries";
+import { formatBrlFromCents } from "@/lib/money/brl";
 
 type SettingsPageProps = {
   searchParams: Promise<{ erro?: string; mensagem?: string }>;
 };
 
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
-  const [{ profile, email }, params] = await Promise.all([
+  const [{ profile, email }, params, subscription] = await Promise.all([
     getCurrentProfile(),
     searchParams,
+    getCurrentSubscription(),
   ]);
+  let configuredPrice: string | null = null;
+  try { configuredPrice = formatBrlFromCents(getSubscriptionPlanConfig().amountCents); } catch { /* mensagem segura abaixo */ }
 
   return (
     <main className="mx-auto max-w-2xl space-y-5 px-4 py-8">
@@ -53,6 +61,25 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             <input type="hidden" name="timezone" value="America/Bahia" />
             <Button type="submit">Salvar perfil</Button>
           </form>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Assinatura</CardTitle>
+          <CardDescription>Seu acesso ao Aula SaaS e o período gratuito.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {subscription?.status === "active" ? (
+            <>
+              <div><p className="font-medium">Plano Aula SaaS</p><p className="text-sm text-muted-foreground">Assinatura ativa • {configuredPrice ?? formatBrlFromCents(subscription.amount_cents)} por mês</p></div>
+              <form action={cancelCurrentSubscription}><Button type="submit" variant="destructive">Cancelar assinatura</Button></form>
+            </>
+          ) : (
+            <>
+              <div><p className="font-medium">Seu período gratuito</p><p className="text-sm text-muted-foreground">{remainingTrialDays(profile.trial_ends_at)} dias restantes</p></div>
+              <form action={createSubscriptionCheckout}><Button type="submit">Assinar Aula SaaS</Button></form>
+            </>
+          )}
         </CardContent>
       </Card>
     </main>

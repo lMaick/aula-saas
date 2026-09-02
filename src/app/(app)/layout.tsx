@@ -3,10 +3,14 @@ import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/features/auth/actions";
-import { getCurrentProfile } from "@/features/profile/queries";
+import { getCurrentProfile, normalizeCurrentAccountAccess } from "@/features/profile/queries";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { profile } = await getCurrentProfile();
+  const [{ profile }, accountStatus] = await Promise.all([
+    getCurrentProfile(),
+    normalizeCurrentAccountAccess(),
+  ]);
+  if (accountStatus === "expired") redirect("/assinar");
   if (!profile.onboarding_completed_at) redirect("/onboarding");
 
   return (

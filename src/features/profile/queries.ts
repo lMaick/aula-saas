@@ -27,3 +27,12 @@ export const getCurrentProfile = cache(async () => {
 
   return { profile: data, email: user.email ?? "" };
 });
+
+export async function normalizeCurrentAccountAccess() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/entrar");
+  const { data, error } = await supabase.rpc("normalize_current_account_access");
+  if (error || !data) throw new Error("Não foi possível validar o acesso da conta.");
+  return data;
+}

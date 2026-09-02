@@ -54,6 +54,12 @@ const knownMessages: Record<string, string> = {
   onboarding_schedule_invalid: "Revise o dia, horário e duração da aula.",
   onboarding_schedule_conflict: "Já existem aulas conflitantes com esse horário nas próximas 8 semanas.",
   onboarding_schedule_failed: "Não foi possível criar o primeiro horário.",
+  payment_unavailable: "A configuração de pagamento está indisponível no momento.",
+  provider_unavailable: "O Mercado Pago está temporariamente indisponível. Tente novamente.",
+  checkout_unavailable: "Não foi possível abrir o checkout agora.",
+  subscription_invalid: "Não foi possível validar esta assinatura.",
+  sync_failed: "Não foi possível sincronizar a assinatura.",
+  cancel_failed: "Não foi possível cancelar a assinatura.",
 };
 
 export function authErrorMessage(code: string) {

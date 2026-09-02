@@ -5,6 +5,7 @@ export type LessonStatus = "scheduled" | "completed" | "cancelled" | "makeup_pen
 export type ChargeStatus = "pending" | "paid";
 export type ChargeBillingModel = "per_lesson" | "monthly" | "package";
 export type PackageStatus = "active" | "completed" | "cancelled";
+export type SubscriptionStatus = "pending" | "active" | "paused" | "cancelled";
 
 export type Database = {
   public: {
@@ -244,6 +245,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      subscriptions: {
+        Row: {
+          id: string;
+          owner_id: string;
+          provider: "mercado_pago";
+          provider_subscription_id: string | null;
+          provider_status: string | null;
+          status: SubscriptionStatus;
+          amount_cents: number;
+          currency: "BRL";
+          checkout_url: string | null;
+          activated_at: string | null;
+          cancelled_at: string | null;
+          current_period_end: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          owner_id?: string;
+          provider?: "mercado_pago";
+          provider_subscription_id?: string | null;
+          provider_status?: string | null;
+          status?: SubscriptionStatus;
+          amount_cents: number;
+          currency?: "BRL";
+          checkout_url?: string | null;
+          activated_at?: string | null;
+          cancelled_at?: string | null;
+          current_period_end?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Record<never, never>;
+        Relationships: [];
+      };
     };
     Views: Record<never, never>;
     Functions: {
@@ -333,6 +370,36 @@ export type Database = {
           p_duration_minutes: number;
         };
         Returns: string;
+      };
+      reserve_subscription_checkout: {
+        Args: { p_owner_id: string; p_amount_cents: number };
+        Returns: string;
+      };
+      bind_subscription_provider: {
+        Args: {
+          p_subscription_id: string;
+          p_owner_id: string;
+          p_provider_subscription_id: string;
+          p_provider_status: string;
+          p_checkout_url: string;
+        };
+        Returns: undefined;
+      };
+      apply_subscription_provider_state: {
+        Args: {
+          p_owner_id: string;
+          p_provider_subscription_id: string;
+          p_provider_status: string;
+          p_status: SubscriptionStatus;
+          p_amount_cents: number;
+          p_currency: string;
+          p_current_period_end?: string | null;
+        };
+        Returns: undefined;
+      };
+      normalize_current_account_access: {
+        Args: Record<string, never>;
+        Returns: AccountStatus;
       };
     };
     Enums: Record<never, never>;
