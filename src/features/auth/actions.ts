@@ -9,8 +9,8 @@ import {
   resetPasswordSchema,
   signupSchema,
 } from "@/features/auth/schemas";
-import { getSupabasePublicEnv } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
+import { getSupabaseServerEnv } from "@/lib/supabase/server-env";
 
 function value(formData: FormData, field: string) {
   return String(formData.get(field) ?? "");
@@ -26,7 +26,7 @@ export async function signUp(formData: FormData) {
   if (!parsed.success) redirect("/cadastrar?erro=invalid_form");
 
   const supabase = await createClient();
-  const { siteUrl } = getSupabasePublicEnv();
+  const { siteUrl } = getSupabaseServerEnv();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
@@ -73,7 +73,7 @@ export async function requestPasswordReset(formData: FormData) {
   if (!parsed.success) redirect("/recuperar-acesso?erro=invalid_form");
 
   const supabase = await createClient();
-  const { siteUrl } = getSupabasePublicEnv();
+  const { siteUrl } = getSupabaseServerEnv();
   const { error } = await supabase.auth.resetPasswordForEmail(
     parsed.data.email,
     { redirectTo: `${siteUrl}/auth/callback?next=/redefinir-senha` },

@@ -1,14 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { getSupabasePublicEnv } from "@/lib/supabase/env";
+import { getSupabaseServerEnv } from "@/lib/supabase/server-env";
 import type { Database } from "@/types/database";
 
 const protectedRoutes = ["/dashboard", "/area", "/configuracoes", "/alunos", "/agenda", "/financeiro", "/onboarding", "/assinar", "/assinatura/retorno"];
 const guestOnlyRoutes = ["/entrar", "/cadastrar", "/recuperar-acesso"];
 
 export async function updateSession(request: NextRequest) {
-  const { url, publishableKey } = getSupabasePublicEnv();
+  const { url, publishableKey } = getSupabaseServerEnv();
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient<Database>(url, publishableKey, {

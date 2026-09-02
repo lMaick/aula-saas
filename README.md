@@ -25,7 +25,12 @@ npm run typecheck
 npm run build
 ```
 
-Preencha `.env.local` com a URL, a chave pública do Supabase e a URL local do site. Nunca use uma chave `service_role` em variáveis `NEXT_PUBLIC_*`.
+Preencha `.env.local` com os dois grupos de configuração do Supabase:
+
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e `NEXT_PUBLIC_SITE_URL` são usados pelo browser;
+- `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` e `SITE_URL` são usados por Server Components, Server Actions e pelo proxy.
+
+Em produção, ambos os grupos precisam estar configurados. A URL e a chave publicável podem repetir os mesmos valores nos dois grupos porque atendem fronteiras de execução diferentes. Nunca use uma chave `service_role` em variáveis `NEXT_PUBLIC_*`.
 
 ## Assinatura pelo Mercado Pago
 
