@@ -45,3 +45,14 @@ Além das variáveis públicas, configure somente no servidor:
 Cadastre no painel do Mercado Pago a URL de Webhooks `https://SEU_DOMINIO/api/webhooks/mercado-pago` para o evento de assinaturas (`subscription_preapproval`). O retorno do checkout é `https://SEU_DOMINIO/assinatura/retorno`. Em desenvolvimento, use credenciais de teste e uma URL HTTPS pública para receber webhooks; nunca copie tokens para arquivos versionados.
 
 As migrations ficam em `supabase/migrations` e devem ser aplicadas ao projeto Supabase antes de testar autenticação e perfil.
+### Google OAuth (opcional)
+
+O login com Google usa o provider do Supabase Auth e continua adicional ao e-mail e senha. Para habilitá-lo:
+
+1. Crie um OAuth Client no Google Cloud Console.
+2. No Google Cloud, use como **Authorized Redirect URI** a callback URL do provider Google exibida pelo Supabase. Ela não é `https://aula-saas.vercel.app/auth/callback`.
+3. No Supabase Dashboard, abra Authentication → Providers → Google e informe o Client ID e Client Secret.
+4. Em URL Configuration do Supabase, use como Site URL de produção `https://aula-saas.vercel.app`.
+5. Inclua nas Redirect URLs do Supabase `https://aula-saas.vercel.app/auth/callback` e a callback local necessária para desenvolvimento.
+
+As credenciais ficam somente no Supabase; não são configuradas nem expostas pela aplicação Next.js.

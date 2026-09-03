@@ -1,5 +1,6 @@
 const knownMessages: Record<string, string> = {
   invalid_credentials: "E-mail ou senha inválidos.",
+  oauth_failed: "Não foi possível entrar com o Google. Tente novamente.",
   email_in_use: "Não foi possível criar a conta com esse e-mail.",
   invalid_form: "Revise os dados informados e tente novamente.",
   recovery_failed: "Não foi possível enviar o link de recuperação.",

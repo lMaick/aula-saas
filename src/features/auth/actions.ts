@@ -61,6 +61,21 @@ export async function signIn(formData: FormData) {
   redirect("/dashboard");
 }
 
+export async function signInWithGoogle() {
+  const supabase = await createClient();
+  const { siteUrl } = getSupabaseServerEnv();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${siteUrl}/auth/callback?next=/dashboard`,
+    },
+  });
+
+  if (error || !data.url) redirect("/entrar?erro=oauth_failed");
+
+  redirect(data.url);
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();

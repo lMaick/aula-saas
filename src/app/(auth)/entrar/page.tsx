@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { AuthShell } from "@/components/shared/auth-shell";
 import { FormMessage } from "@/components/shared/form-message";
+import { GoogleAuthButton } from "@/components/shared/google-auth-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +29,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       }
     >
       <FormMessage errorCode={params.erro} message={params.mensagem} />
+      <GoogleAuthButton />
       <form action={signIn} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">E-mail</Label>
