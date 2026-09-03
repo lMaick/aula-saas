@@ -22,6 +22,13 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) return NextResponse.redirect(new URL(next, request.url));
+
+    console.error("[AULA_SAAS_OAUTH_EXCHANGE_ERROR]", {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      status: error.status,
+    });
   }
 
   return NextResponse.redirect(
