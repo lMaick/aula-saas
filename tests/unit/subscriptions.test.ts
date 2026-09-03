@@ -23,6 +23,32 @@ test("calcula dias restantes e validade do trial", () => {
   assert.equal(isTrialValid("2026-09-02T12:00:00.000Z", now), false);
 });
 
+test("diagnóstico do Mercado Pago registra apenas campos seguros", async () => {
+  const original = console.error;
+  let logged: unknown;
+  console.error = (...args: unknown[]) => { logged = args; };
+  try {
+    await assert.rejects(() => mercadoPagoRequest({
+      accessToken: "super-secret-token",
+      path: "/preapproval",
+      init: { method: "POST", headers: { Authorization: "Bearer super-secret-token" }, body: JSON.stringify({ payer_email: "person@example.com" }) },
+      fetcher: (async () => new Response(JSON.stringify({ error: "bad_request", message: "invalid payload", code: "X", cause: [{ code: "C", description: "Campo inválido" }] }), { status: 400 })) as typeof fetch,
+    }), /mercado_pago_request_failed:400/);
+  } finally { console.error = original; }
+  const rendered = JSON.stringify(logged);
+  assert.match(rendered, /bad_request/);
+  assert.match(rendered, /Campo inválido/);
+  assert.doesNotMatch(rendered, /super-secret-token|Authorization|payer_email|person@example.com/);
+});
+
+test("diagnóstico tolera resposta de erro não-JSON", async () => {
+  await assert.rejects(() => mercadoPagoRequest({
+    accessToken: "test-token",
+    path: "/preapproval",
+    fetcher: (async () => new Response("provider unavailable", { status: 502 })) as typeof fetch,
+  }), /mercado_pago_request_failed:502/);
+});
+
 test("trial válido ou assinatura ativa garantem acesso", () => {
   assert.equal(accountHasAccess({ trialEndsAt: "2026-09-03T00:00:00Z", subscriptionStatus: null, now }), true);
   assert.equal(accountHasAccess({ trialEndsAt: "2026-09-01T00:00:00Z", subscriptionStatus: "active", now }), true);
