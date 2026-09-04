@@ -73,7 +73,7 @@ test("segredos permanecem server-side", () => {
     "AULA_SAAS_MONTHLY_PRICE_CENTS",
     "MERCADO_PAGO_ACCESS_TOKEN",
     "MERCADO_PAGO_WEBHOOK_SECRET",
-    "NEXT_PUBLIC_APP_URL",
+    "SITE_URL",
   ]) {
     assert.match(config, new RegExp(`process\\.env\\.${name}`));
   }

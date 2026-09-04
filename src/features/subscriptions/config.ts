@@ -19,7 +19,7 @@ export function getSubscriptionPlanConfig() {
 }
 
 export function getMercadoPagoConfig() {
-  const appUrl = required("NEXT_PUBLIC_APP_URL", process.env.NEXT_PUBLIC_APP_URL);
+  const appUrl = required("SITE_URL", process.env.SITE_URL);
   const parsedUrl = new URL(appUrl);
   if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
     throw new Error("subscription_app_url_invalid");

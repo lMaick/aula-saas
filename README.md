@@ -40,7 +40,7 @@ Além das variáveis públicas, configure somente no servidor:
 - `MERCADO_PAGO_ACCESS_TOKEN`: Access Token de teste ou produção;
 - `MERCADO_PAGO_WEBHOOK_SECRET`: assinatura secreta exibida ao configurar Webhooks;
 - `AULA_SAAS_MONTHLY_PRICE_CENTS`: preço mensal em centavos;
-- `NEXT_PUBLIC_APP_URL`: origem pública da aplicação, sem caminho.
+- `SITE_URL`: origem pública da aplicação, sem caminho. Ela também define as URLs server-side de retorno e webhook da assinatura.
 
 Cadastre no painel do Mercado Pago a URL de Webhooks `https://SEU_DOMINIO/api/webhooks/mercado-pago` para o evento de assinaturas (`subscription_preapproval`). O retorno do checkout é `https://SEU_DOMINIO/assinatura/retorno`. Em desenvolvimento, use credenciais de teste e uma URL HTTPS pública para receber webhooks; nunca copie tokens para arquivos versionados.
 

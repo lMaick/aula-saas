@@ -27,7 +27,7 @@ const names = [
   "AULA_SAAS_MONTHLY_PRICE_CENTS",
   "MERCADO_PAGO_ACCESS_TOKEN",
   "MERCADO_PAGO_WEBHOOK_SECRET",
-  "NEXT_PUBLIC_APP_URL",
+  "SITE_URL",
 ] as const;
 const originals = Object.fromEntries(names.map((name) => [name, process.env[name]]));
 
@@ -35,7 +35,7 @@ function setValidValues() {
   process.env.AULA_SAAS_MONTHLY_PRICE_CENTS = "2990";
   process.env.MERCADO_PAGO_ACCESS_TOKEN = "test-access-token";
   process.env.MERCADO_PAGO_WEBHOOK_SECRET = "test-webhook-secret";
-  process.env.NEXT_PUBLIC_APP_URL = "https://aula.example.test/path";
+  process.env.SITE_URL = "https://aula.example.test/path";
 }
 
 beforeEach(setValidValues);

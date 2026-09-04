@@ -31,7 +31,7 @@ const safeCheckoutErrors = new Set([
   "subscription_config_missing:AULA_SAAS_MONTHLY_PRICE_CENTS",
   "subscription_config_missing:MERCADO_PAGO_ACCESS_TOKEN",
   "subscription_config_missing:MERCADO_PAGO_WEBHOOK_SECRET",
-  "subscription_config_missing:NEXT_PUBLIC_APP_URL",
+  "subscription_config_missing:SITE_URL",
   "subscription_price_invalid",
   "subscription_app_url_invalid",
   "subscription_reservation_failed",
