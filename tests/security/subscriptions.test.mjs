@@ -42,6 +42,12 @@ test("checkout, sincronização e cancelamento autenticam", () => {
   }
 });
 
+test("diagnóstico do checkout registra somente códigos internos permitidos", () => {
+  assert.match(actions, /\[AULA_SAAS_SUBSCRIPTION_CHECKOUT_ERROR\]/);
+  assert.match(actions, /safeCheckoutErrors\.has\(message\)/);
+  assert.doesNotMatch(actions, /console\.error\([\s\S]{0,300}(user\.email|user\.id|reservationId|accessToken|provider_subscription_id)/);
+});
+
 test("webhook valida HMAC e consulta a API antes de atualizar acesso", () => {
   assert.match(webhook, /validateMercadoPagoWebhookSignature/);
   assert.match(webhook, /synchronizeSubscription\(dataId\)/);

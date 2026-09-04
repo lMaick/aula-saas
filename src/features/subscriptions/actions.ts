@@ -27,6 +27,25 @@ function failurePath(base: string, error: unknown) {
   return `${base}?erro=provider_unavailable`;
 }
 
+const safeCheckoutErrors = new Set([
+  "subscription_config_missing:AULA_SAAS_MONTHLY_PRICE_CENTS",
+  "subscription_config_missing:MERCADO_PAGO_ACCESS_TOKEN",
+  "subscription_config_missing:MERCADO_PAGO_WEBHOOK_SECRET",
+  "subscription_config_missing:NEXT_PUBLIC_APP_URL",
+  "subscription_price_invalid",
+  "subscription_app_url_invalid",
+  "subscription_reservation_failed",
+  "subscription_binding_failed",
+  "checkout_url_missing",
+]);
+
+function logSafeCheckoutError(error: unknown) {
+  const message = error instanceof Error ? error.message : "";
+  console.error("[AULA_SAAS_SUBSCRIPTION_CHECKOUT_ERROR]", {
+    code: safeCheckoutErrors.has(message) ? message : "checkout_failed",
+  });
+}
+
 export async function createSubscriptionCheckout() {
   const { supabase, user } = await authenticatedContext();
   let destination = "/assinar?erro=provider_unavailable";
@@ -72,6 +91,7 @@ export async function createSubscriptionCheckout() {
       destination = remote.init_point;
     }
   } catch (error) {
+    logSafeCheckoutError(error);
     destination = failurePath("/assinar", error);
   }
 
