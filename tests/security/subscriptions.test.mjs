@@ -11,6 +11,7 @@ const actions = await read("src/features/subscriptions/actions.ts");
 const service = await read("src/features/subscriptions/service.ts");
 const client = await read("src/features/subscriptions/mercado-pago.ts");
 const http = await read("src/features/subscriptions/mercado-pago-http.ts");
+const config = await read("src/features/subscriptions/config.ts");
 const webhook = await read("src/app/api/webhooks/mercado-pago/route.ts");
 const proxy = await read("src/lib/supabase/proxy.ts");
 
@@ -57,9 +58,19 @@ test("retorno não ativa a conta por query string", async () => {
 
 test("segredos permanecem server-side", () => {
   assert.match(client, /import "server-only"/);
+  assert.match(config, /import "server-only"/);
   assert.match(http, /Authorization: `Bearer/);
   assert.doesNotMatch(`${client}\n${http}`, /NEXT_PUBLIC_MERCADO|NEXT_PUBLIC.*TOKEN/i);
   assert.doesNotMatch(`${actions}\n${webhook}`, /formData\.get\(["'](owner_id|price|provider)/i);
+  assert.doesNotMatch(config, /process\.env\s*\[/);
+  for (const name of [
+    "AULA_SAAS_MONTHLY_PRICE_CENTS",
+    "MERCADO_PAGO_ACCESS_TOKEN",
+    "MERCADO_PAGO_WEBHOOK_SECRET",
+    "NEXT_PUBLIC_APP_URL",
+  ]) {
+    assert.match(config, new RegExp(`process\\.env\\.${name}`));
+  }
 });
 
 test("paywall protege áreas normais e libera rotas de assinatura", () => {
